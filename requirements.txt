@@ -1,0 +1,32 @@
+pipdeptree 
+rich 
+streamlit
+pandas
+numpy
+
+django
+django-extensions
+Werkzeug
+
+# Python OpenSSL Library is required to use runserver_plus with sslsupport.
+# Install via pip (pip install pyOpenSSL).
+pyOpenSSL
+litecli
+markdown 
+
+openai
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+requests
+
+youtube-transcript-api
+geopy
+
+langchain
+langchain-community
+langchain-openai
+langchain-google-genai
+langchain-core
+

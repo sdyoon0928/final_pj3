@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>여행 - 로그인</title>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="login-container">
+    <h1> 한국 여행</h1>
+    <p class="subtitle">로그인 후 여행챗봇을 이용해보세요 </p>
+
+    <!-- ✅ Django messages 메시지 출력 -->
+    {% if messages %}
+      {% for message in messages %}
+        <p class="error">⚠️ {{ message }}</p>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" action="{% url 'login' %}">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="아이디" required />
+      <input type="password" name="password" placeholder="비밀번호" required />
+      <button type="submit">로그인</button>
+    </form>
+
+    <p class="auth-link">계정이 없으신가요? <a href="{% url 'register' %}">회원가입</a></p>
+  </div>
+</body>
+</html>

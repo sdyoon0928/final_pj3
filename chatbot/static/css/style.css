@@ -1,0 +1,375 @@
+/* ================================ */
+/* 🔹 왼쪽 상단 비행기 버튼 스타일  */
+/* ================================ */
+#toggle-history-btn {
+  position: fixed;
+  top: 6px;
+  left: 16px;
+  z-index: 20001;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.8rem; /* 아이콘 크기 */
+  color: #333;
+}
+
+/* ================================ */
+/* 🔹 사이드바(히스토리 목록)       */
+/* ================================ */
+.chat-sidebar {
+  position: fixed;
+  top: 0;
+  left: -300px; /* 처음엔 화면 밖으로 숨김 */
+  width: 300px;
+  height: 100vh;
+  background: #f9f9f9;
+  border-right: 1px solid #ddd;
+  padding: 60px 16px 20px 16px;  /* ✅ 위쪽 여백을 60px로 늘림 */
+  overflow-y: auto;
+  box-shadow: 2px 0 12px rgb(0 0 0 / 0.12);
+  transition: left 0.3s ease;
+  z-index: 1000;
+}
+.chat-sidebar.open {
+  left: 0; /* 버튼 클릭 시 왼쪽에서 열림 */
+}
+
+.chat-sidebar h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+}
+
+#history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.history-item {
+  padding: 10px 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #e0e0ff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  user-select: none;
+}
+.history-item:hover, .history-item:focus {
+  background-color: #c5caff;
+  outline: none;
+}
+.history-item.active {
+  background-color: #a0aaff;
+  font-weight: bold;
+}
+.history-title {
+  flex-grow: 1;
+  padding-right: 8px;
+}
+
+/* 삭제 버튼 (히스토리 항목 오른쪽 X버튼) */
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #b00;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 6px;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.delete-btn:hover, .delete-btn:focus {
+  color: #e00;
+  outline: none;
+}
+
+/* ================================ */
+/* 🔹 채팅 영역 전체 박스            */
+/* ================================ */
+.chat-wrap {
+  flex-grow: 1;
+  background: rgba(154, 206, 255, 0.678); /* 파란 투명 배경 */
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 14px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  
+  margin: 40px auto;     
+  max-width: 900px;
+  min-height: 500px;
+  box-sizing: border-box;
+  transition: none;
+}
+
+/* 채팅 카드(실제 메시지 담기는 영역) */
+.chat-card {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background: transparent !important;  /* 흰색 제거 */
+  box-shadow: none !important;         /* 그림자 제거 */
+  border: none !important;             /* 테두리 제거 */
+  width: 100%;
+  max-width: 900px;   /* 박스 크기 */
+  box-sizing: border-box;
+  transition: none;
+  padding: 0;         /* 내부 여백 제거 */
+}
+
+/* ================================ */
+/* 🔹 메시지 목록(스크롤 가능)       */
+/* ================================ */
+/* 채팅 메시지 영역에 내부 스크롤 적용 */
+.chat-messages {
+  flex-grow: 1;
+  max-height: 500px;   /* ✅ 원하는 높이 설정 */
+  overflow-y: auto;    /* ✅ 세로 스크롤만 표시 */
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+/* 스크롤바 스타일 (선택 사항) */
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(100, 100, 100, 0.3);
+  border-radius: 4px;
+}
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+/* ================================ */
+/* 🔹 메시지 기본 스타일             */
+/* ================================ */
+.message {
+  padding: 12px 16px;
+  border-radius: 18px;
+  margin: 20px 0;   /* 메시지 간격 */
+  line-height: 1.6;
+  max-width: 75%;
+  word-wrap: break-word;
+  font-size: 15px;
+  position: relative;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+/* 사용자 메시지(오른쪽 정렬) */
+.user-message {
+  background: #ffffff; /* 흰색 말풍선 */
+  color: #000;
+  align-self: flex-end;
+  text-align: right;
+  border-top-right-radius: 4px;
+  position: relative;
+  margin-left: auto;
+  margin-right: 0;
+  max-width: 40%;
+}
+/* 사용자 말풍선 꼬리 */
+.user-message::after {
+  content: "";
+  position: absolute;
+  right: -8px;
+  top: 12px;
+  border-width: 8px 0 8px 8px;
+  border-style: solid;
+  border-color: transparent transparent transparent #ffffff; 
+}
+
+/* 챗봇 메시지(왼쪽 정렬) */
+.bot-message {
+  background: hsl(0, 0%, 100%);
+  color: #000;
+  align-self: flex-start;
+  text-align: left;
+  border-top-left-radius: 4px;
+  position: relative;
+}
+/* 챗봇 말풍선 꼬리 */
+.bot-message::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 12px;
+  border-width: 8px 8px 8px 0;
+  border-style: solid;
+  border-color: transparent #ffffff transparent transparent;
+}
+
+.section-title {
+  margin: 16px 0 8px;
+
+}
+
+/* 작은 뱃지 스타일 */
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--brand-100, #eef0ff);
+  color: var(--brand-600, #5a67d8);
+  border: 1px solid rgba(90, 103, 216, 0.123);
+}
+
+/* JSON 예제 박스 */
+.json-sample {
+  background: #0f172a;
+  color: #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+/* ================================ */
+/* 🔹 입력창 스타일                  */
+/* ================================ */
+.chat-input {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+}
+#chat-input-box {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid var(--line, #eee);
+  border-radius: 12px;
+  outline: none;
+  color: #222;
+  background: rgba(255, 255, 255, 0.85);
+}
+#chat-input-box:focus {
+  border-color: var(--brand-600, #5a67d8);
+  box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.12);
+}
+#chat-input-box::placeholder {
+  color: rgba(0, 0, 0, 0.45);
+}
+.btn-send {
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background: var(--brand, #6e7bf0);
+  color: #ffd3d3;
+  font-weight: 600;
+}
+
+/* ================================ */
+/* 🔹 스크롤바 숨기기               */
+/* ================================ */
+.chat-messages::-webkit-scrollbar {
+  display: none;
+}
+
+/* ================================ */
+/* 🔹 배경 이미지                   */
+/* ================================ */
+body {
+  background: url("/static/img/jejudo.jpg") center/cover fixed no-repeat;
+  background-color: rgba(255,255,255,0.1);
+  background-blend-mode: lighten;
+}
+
+/* ================================ */
+/* 🔹 모바일 대응                   */
+/* ================================ */
+@media (max-width: 768px) {
+  #toggle-history-btn {
+    top: 12px;
+    left: 12px;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+  .chat-sidebar {
+    width: 260px;
+    left: -280px;
+  }
+  .chat-sidebar.open {
+    left: 0;
+  }
+}
+
+/* ================================ */
+/* 🔹 일정 저장 버튼 스타일          */
+/* ================================ */
+
+/* ================================ */
+/* 🔹 일정 저장 버튼 스타일          */
+/* ================================ */
+
+/* 버튼을 감싸는 컨테이너 */
+.schedule-save-container {
+    width: 100%;                /* 입력창과 같은 가로폭 */
+    display: flex;              /* flexbox 사용 */
+    justify-content: center;    /* 👉 버튼을 가로 중앙에 위치 */
+    margin-top: 12px;           /* 입력창과의 간격 */
+}
+
+/* '이 일정 저장하기' 버튼 */
+#saveScheduleBtn {
+    padding: 12px 24px;         /* 버튼 크기 */
+    font-size: 1rem;            /* 글씨 크기 */
+    border-radius: 20px;        /* 둥근 모서리 */
+    border: none;               /* 테두리 제거 */
+    background-color: #4a90e2;  /* 기본 배경색 (파란색 계열로 변경) */
+    color: white;               /* 글씨 흰색 */
+    cursor: pointer;            /* 마우스 올리면 손가락 포인터 */
+    transition: all 0.3s ease;  /* hover 효과 부드럽게 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 기본 그림자 */
+}
+
+/* hover 효과 */
+#saveScheduleBtn:hover {
+    background-color: #357abd;  /* hover 시 더 진한 파란색 */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+/* 비활성화 상태 */
+#saveScheduleBtn:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* 실제 '이 일정 저장하기' 버튼 */
+#saveScheduleBtn {
+    padding: 12px 24px;         /* 버튼 안쪽 여백 */
+    font-size: 1rem;            /* 글씨 크기 */
+    border-radius: 20px;        /* 둥근 모서리 */
+    border: none;               /* 테두리 제거 */
+    background-color: #4a5568;  /* 기본 배경색 (진한 회색) */
+    color: white;               /* 글씨색 흰색 */
+    cursor: pointer;            /* 마우스 올리면 손가락 포인터 */
+    transition: all 0.3s ease;  /* hover 효과 부드럽게 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 기본 그림자 */
+}
+
+/* 마우스를 올렸을 때 효과 */
+#saveScheduleBtn:hover {
+    background-color: #2d3748;  /* hover 시 더 진한 회색 */
+    transform: translateY(-2px); /* 버튼이 살짝 위로 올라가는 효과 */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15); /* 그림자 강화 */
+}
+
+/* 버튼이 비활성화(disabled)일 때 */
+#saveScheduleBtn:disabled {
+    background-color: #a0aec0;  /* 연한 회색으로 표시 */
+    cursor: not-allowed;        /* 클릭 불가 마우스 표시 */
+    transform: none;            /* hover 효과 제거 */
+    box-shadow: none;           /* 그림자 제거 */
+}

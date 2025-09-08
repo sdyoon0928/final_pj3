@@ -1,0 +1,399 @@
+{% extends 'pybo/base.html' %}
+
+{% block content %}
+<div class="d-flex" style="height: 100vh;">
+    <!-- 왼쪽 검색/목록 -->
+    <aside class="p-3 bg-light" style="width: 300px; border-right: 1px solid #ddd;">
+        <h5>장소 검색</h5>
+        <input type="text" id="search-input" class="form-control mb-2" placeholder="검색어 입력">
+        <button class="btn btn-primary w-100 mb-3" id="search-button">검색</button>
+        <ul class="list-group" id="place-list"></ul>
+    </aside>
+
+    <!-- 오른쪽 지도 -->
+    <section class="flex-grow-1">
+        <div id="map" style="width: 100%; height: 100%;"></div>
+    </section>
+</div>
+
+<!-- 지도 위 투명 오버레이 -->
+<div id="overlay">
+    <div id="sidebar" class="collapsed" aria-label="사이드바">
+        <h2 style="display:flex;align-items:center;justify-content:space-between;">
+            장소 보관함
+            <button id="resetSchedule" style="margin-left:8px;">초기화</button>
+        </h2>
+
+        <!-- Day 선택 및 추가 -->
+        <div style="padding:8px;">
+            <select id="daySelector" class="form-select"></select>
+            <button id="addDay" class="btn btn-sm btn-outline-primary mt-2">Day 추가</button>
+        </div>
+
+        <div id="day-schedule"></div>
+    </div>
+    <button id="toggleBtn" aria-label="사이드바 토글">≡</button>
+</div>
+
+<!-- 로드뷰 컨테이너 -->
+<div id="roadviewContainer" class="collapsed">
+    <div id="roadviewHeader">
+        <span>로드뷰</span>
+        <button id="toggleRoadview">▲</button>
+    </div>
+    <div id="roadview" style="width:100%; height:200px;"></div>
+</div>
+
+<style>
+/* === 기존 스타일 유지 === */
+#overlay { position: absolute; inset: 0; pointer-events: none; z-index: 1000; background: transparent; }
+#sidebar { position: absolute; top: 0; left: 0; height: 100%; width: 260px; background: #f8f9fa; border-right: 1px solid #ddd; box-shadow: 2px 0 8px rgba(0,0,0,0.06); overflow: auto; z-index: 1001; pointer-events: auto; transform: translateX(-100%); transition: transform 0.3s ease; }
+#sidebar:not(.collapsed) { transform: translateX(0); }
+#sidebar h2 { margin:0; padding:14px 16px; background:#e9ecef; font-size:16px; }
+.category { padding:10px; }
+.place-list { display:flex; flex-wrap:wrap; gap:6px; }
+.tag { display:inline-flex; align-items:center; padding:4px 8px; border-radius:6px; font-size:13px; background:#ddd; }
+.tag span { margin-right:6px; }
+.tag button { border:none; background:transparent; color:#333; font-weight:bold; cursor:pointer; }
+.tag.숙소 { background:#ffa94d; }
+.tag.식당 { background:#74c0fc; }
+.tag.카페 { background:#d0aefc; }
+.tag.관광지 { background:#63e6be; }
+.tag.기타 { background:#adb5bd; }
+#toggleBtn { position:absolute; top:10px; left:10px; z-index:1002; pointer-events:auto; background:#fff; border:1px solid #ccc; border-radius:6px; padding:6px 10px; cursor:pointer; transition:left 0.3s ease; }
+#sidebar:not(.collapsed) ~ #toggleBtn { left:270px; }
+#roadviewContainer { position:absolute; bottom:20px; right:20px; width:250px; border:1px solid #ccc; border-radius:8px; background:#fff; box-shadow:2px 2px 12px rgba(0,0,0,0.2); overflow:hidden; transition:height 0.3s ease; z-index:1500; pointer-events:auto; }
+#roadviewContainer.collapsed { height:40px; }
+#roadviewHeader { display:flex; justify-content:space-between; align-items:center; padding:4px 8px; background:#f1f3f5; font-size:14px; font-weight:500; }
+#roadviewHeader button { border:none; background:transparent; cursor:pointer; font-size:12px; }
+.select-category { margin-top:5px; margin-bottom:5px; width:100%; }
+</style>
+
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=aab190725bc066f57d354c4ea0eb6b3e&libraries=services,roadview"></script>
+
+<script>
+// === 기본 데이터 ===
+const DEFAULT_DAY_SCHEDULE = { 숙소:[], 식당:[], 카페:[], 관광지:[], 기타:[] };
+const DAY_COLORS = { Day1:'#FF0000', Day2:'#007bff', Day3:'#00c853', Day4:'#ff6d00', Day5:'#6a1b9a' };
+
+function loadSchedule() {
+    try {
+        const raw = localStorage.getItem('schedule_v2');
+        if (!raw) return { Day1: structuredClone(DEFAULT_DAY_SCHEDULE) };
+        return JSON.parse(raw);
+    } catch { return { Day1: structuredClone(DEFAULT_DAY_SCHEDULE) }; }
+}
+
+let schedule = loadSchedule();
+let currentDay = Object.keys(schedule)[0];
+
+// ✅ URL 파라미터에서 schedule_id 확인 후 API로 일정 불러오기
+async function loadScheduleFromServer() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("schedule_id")) {
+        const sid = params.get("schedule_id");
+        try {
+            const res = await fetch(`/get_schedule/${sid}/`);
+            if (!res.ok) throw new Error("서버 응답 오류");
+            const data = await res.json();
+
+            // ✅ DB에서 불러온 JSON이 전체 schedule 데이터이므로 그대로 반영
+            schedule = data;
+
+            // ✅ 현재 Day 설정 (첫 번째 Day가 존재하면 그걸로)
+            currentDay = Object.keys(schedule)[0] || "Day1";
+
+            saveSchedule(); // localStorage에도 저장
+        } catch (err) {
+            console.error("일정 불러오기 실패:", err);
+            alert("일정을 불러올 수 없습니다.");
+        }
+    }
+}
+
+// === Day별 마커/Polyline 관리 ===
+let dayMarkers = {};  
+let polylines = {};   
+
+// === 지도/로드뷰 초기화 ===
+const mapContainer = document.getElementById('map');
+const map = new kakao.maps.Map(mapContainer, { center: new kakao.maps.LatLng(37.5665,126.9780), level:7 });
+const ps = new kakao.maps.services.Places();
+let markers = [];
+
+const roadview = new kakao.maps.Roadview(document.getElementById('roadview'));
+const roadviewClient = new kakao.maps.RoadviewClient();
+function showRoadview(lat,lng){
+    const pos = new kakao.maps.LatLng(lat,lng);
+    roadviewClient.getNearestPanoId(pos,50,(panoId)=>{
+        if(!panoId) return;
+        roadview.setPanoId(panoId,pos);
+        roadviewContainer.classList.remove('collapsed');
+    });
+}
+
+// === 사이드바 Day 관리 ===
+const daySelector = document.getElementById('daySelector');
+const dayScheduleDiv = document.getElementById('day-schedule');
+
+function renderDayOptions() {
+    daySelector.innerHTML = '';
+    Object.keys(schedule).forEach(day => {
+        const opt = document.createElement('option');
+        opt.value = day;
+        opt.textContent = day;
+        if (day===currentDay) opt.selected=true;
+        daySelector.appendChild(opt);
+        if(!dayMarkers[day]) dayMarkers[day]=[];
+    });
+}
+
+document.getElementById('addDay').addEventListener('click',()=>{
+    const newDay=`Day${Object.keys(schedule).length+1}`;
+    schedule[newDay]=structuredClone(DEFAULT_DAY_SCHEDULE);
+    currentDay=newDay;
+    saveSchedule();
+    renderDayOptions();
+    renderSchedule();
+    renderDayMarkers();
+});
+
+daySelector.addEventListener('change',()=>{
+    currentDay=daySelector.value;
+    renderSchedule();
+    renderDayMarkers();
+});
+
+function saveSchedule() { localStorage.setItem('schedule_v2', JSON.stringify(schedule)); }
+
+// === 일정 렌더링 ===
+function renderSchedule(){
+    renderDayOptions();
+    const dayData=schedule[currentDay];
+    dayScheduleDiv.innerHTML='';
+    ['숙소','식당','카페','관광지','기타'].forEach(cat=>{
+        const section=document.createElement('div');
+        section.className='category';
+        section.innerHTML=`<h3>${cat}</h3>`;
+        const list=document.createElement('div');
+        list.className='place-list';
+        if(!dayData[cat] || dayData[cat].length===0) {  // ✅ 데이터 없을 때 처리 강화
+            list.innerHTML=`<span class="text-muted">저장된 ${cat} 없음</span>`;
+        } else {
+            dayData[cat].forEach((item,idx)=>{
+                const tag=document.createElement('div');
+                tag.className=`tag ${cat}`;
+                tag.innerHTML=`<span>${item.name}</span>`;
+                const btn=document.createElement('button');
+                btn.textContent='×';
+                btn.addEventListener('click',()=>{
+                    dayData[cat].splice(idx,1);
+                    removeMarker(idx,cat);
+                    saveSchedule();
+                    renderSchedule();
+                });
+                tag.appendChild(btn);
+                list.appendChild(tag);
+            });
+        }
+        section.appendChild(list);
+        dayScheduleDiv.appendChild(section);
+    });
+}
+
+// === Day별 마커 초기화(저장된 일정 불러오기) ===
+function initDayMarkers() {
+    Object.keys(schedule).forEach(day=>{
+        if(!dayMarkers[day]) dayMarkers[day]=[];
+        const dayData=schedule[day];
+        ['숙소','식당','카페','관광지','기타'].forEach(cat=>{
+            (dayData[cat]||[]).forEach(item=>{
+                addMarker(item.lat, item.lng, item.name, item.address || "", false, day); // ✅ address 없으면 빈값
+            });
+        });
+    });
+}
+
+// === 마커 추가/삭제/Polyline 갱신 ===
+function addMarker(lat,lng,name,address, setMapToMap=true, day=currentDay){
+    if(!dayMarkers[day]) dayMarkers[day]=[];
+    const order=dayMarkers[day].length+1;
+    const marker=new kakao.maps.Marker({
+        map: (setMapToMap && day===currentDay) ? map : null,
+        position:new kakao.maps.LatLng(lat,lng),
+        label:{content:`${order}`, color:'#fff', fontSize:'12px', fontWeight:'bold', backgroundColor:DAY_COLORS[day]||'#007bff', padding:'2px 5px', borderRadius:'50%'}
+    });
+
+    const iwContent=document.createElement('div');
+    iwContent.style.padding='5px';
+    iwContent.innerHTML=`<strong>${name||'장소'}</strong><br>${address||''}`;
+    const iwButton=createAddButton(name,address,lat,lng);
+    iwContent.appendChild(iwButton);
+    const infowindow=new kakao.maps.InfoWindow({content:iwContent});
+
+    kakao.maps.event.addListener(marker,'click',()=>{
+        infowindow.open(map,marker);
+        showRoadview(lat,lng);
+    });
+
+    dayMarkers[day].push(marker);
+    if(setMapToMap && day===currentDay) renderPolyline();
+}
+
+function removeMarker(idx,cat){
+    if(!dayMarkers[currentDay]) return;
+    if(dayMarkers[currentDay][idx]){
+        dayMarkers[currentDay][idx].setMap(null);
+        dayMarkers[currentDay].splice(idx,1);
+        renderPolyline();
+        dayMarkers[currentDay].forEach((m,i)=>{
+            m.setLabel({content:`${i+1}`, color:'#fff', fontSize:'12px', fontWeight:'bold', backgroundColor:DAY_COLORS[currentDay]||'#007bff', padding:'2px 5px', borderRadius:'50%'});
+        });
+    }
+}
+
+function renderPolyline(){
+    if(polylines[currentDay]) polylines[currentDay].setMap(null);
+    if(!dayMarkers[currentDay] || dayMarkers[currentDay].length===0) return;
+    const path=dayMarkers[currentDay].map(m=>m.getPosition());
+    const polyline=new kakao.maps.Polyline({
+        map:map,
+        path:path,
+        strokeWeight:3,
+        strokeColor:DAY_COLORS[currentDay]||'#007bff',
+        strokeOpacity:0.7,
+        strokeStyle:'solid'
+    });
+    polylines[currentDay]=polyline;
+}
+
+function renderDayMarkers(){
+    Object.values(dayMarkers).flat().forEach(m=>m.setMap(null));
+    if(polylines[currentDay]) polylines[currentDay].setMap(null);
+    dayMarkers[currentDay].forEach(m=>m.setMap(map));
+    renderPolyline();
+}
+
+// === 검색 ===
+const placeList = document.getElementById('place-list');
+const searchInput = document.getElementById('search-input');
+const searchButton = document.getElementById('search-button');
+
+function clearMarkers(){ markers.forEach(m=>m.setMap(null)); markers=[]; }
+
+function createAddButton(name,address,lat,lng){
+    const div=document.createElement('div');
+    div.style.marginTop='5px';
+    const select=document.createElement('select');
+    select.className='select-category';
+    ['숙소','식당','카페','관광지','기타'].forEach(c=>{
+        const option=document.createElement('option');
+        option.value=c; option.textContent=c;
+        select.appendChild(option);
+    });
+    const btn=document.createElement('button');
+    btn.textContent='추가';
+    btn.style.cursor='pointer';
+    btn.addEventListener('click',()=>{
+        const category=select.value;
+        schedule[currentDay][category].push({name,address,lat,lng});
+        addMarker(lat,lng,name,address,true,currentDay);
+        saveSchedule();
+        renderSchedule();
+        alert(`[${category}]에 추가되었습니다!`);
+    });
+    div.appendChild(select);
+    div.appendChild(btn);
+    return div;
+}
+
+searchButton.addEventListener('click',()=>{
+    const query=searchInput.value.trim();
+    if(!query) return alert('검색어를 입력하세요.');
+    placeList.innerHTML=''; clearMarkers();
+    ps.keywordSearch(query,(data,status)=>{
+        if(status!==kakao.maps.services.Status.OK) return alert('검색 결과 없음');
+        let currentInfowindow=null;
+        data.forEach(place=>{
+            const position=new kakao.maps.LatLng(place.y,place.x);
+            const marker=new kakao.maps.Marker({map,position});
+            markers.push(marker);
+
+            const iwContent=document.createElement('div');
+            iwContent.style.padding='5px';
+            iwContent.innerHTML=`<strong>${place.place_name}</strong><br>${place.road_address_name||place.address_name}`;
+            iwContent.appendChild(createAddButton(place.place_name,place.road_address_name||place.address_name,place.y,place.x));
+            const infowindow=new kakao.maps.InfoWindow({content:iwContent});
+
+            kakao.maps.event.addListener(marker,'click',()=>{
+                if(currentInfowindow) currentInfowindow.close();
+                infowindow.open(map,marker);
+                currentInfowindow=infowindow;
+                showRoadview(place.y,place.x);
+            });
+
+            const li=document.createElement('li');
+            li.className='list-group-item';
+            li.innerHTML=`<strong>${place.place_name}</strong><br>${place.road_address_name||place.address_name}`;
+            const liSelect=document.createElement('select');
+            liSelect.className='select-category';
+            ['숙소','식당','카페','관광지','기타'].forEach(c=>{
+                const option=document.createElement('option');
+                option.value=c; option.textContent=c;
+                liSelect.appendChild(option);
+            });
+            const liBtn=document.createElement('button');
+            liBtn.textContent='+'; liBtn.className='btn btn-sm btn-success float-end';
+            liBtn.addEventListener('click',()=>{
+                const category=liSelect.value;
+                schedule[currentDay][category].push({name:place.place_name,address:place.road_address_name||place.address_name,lat:place.y,lng:place.x});
+                addMarker(place.y,place.x,place.place_name,place.road_address_name||place.address_name,true,currentDay);
+                saveSchedule();
+                renderSchedule();
+                alert(`[${category}]에 추가되었습니다!`);
+            });
+            li.appendChild(liSelect); li.appendChild(liBtn);
+            li.addEventListener('click',()=>{
+                if(currentInfowindow) currentInfowindow.close();
+                infowindow.open(map,marker);
+                currentInfowindow=infowindow;
+                showRoadview(place.y,place.x);
+            });
+            placeList.appendChild(li);
+        });
+        if(data.length>0) map.setCenter(new kakao.maps.LatLng(data[0].y,data[0].x));
+    });
+});
+
+// === 초기 렌더 ===
+window.addEventListener('load', async ()=>{
+    await loadScheduleFromServer();   // ✅ 서버에서 일정 불러오기 시도
+    initDayMarkers();                 
+    renderSchedule();                 
+    renderDayMarkers();
+});
+
+// === 초기화 버튼 ===
+document.getElementById('resetSchedule').addEventListener('click',()=>{
+    localStorage.removeItem('schedule_v2');
+    schedule={Day1:structuredClone(DEFAULT_DAY_SCHEDULE)};
+    currentDay='Day1';
+    dayMarkers={}; polylines={};
+    initDayMarkers();
+    renderSchedule();
+    renderDayMarkers();
+});
+
+// === UI 토글 ===
+const sidebar = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('toggleBtn');
+toggleBtn.addEventListener('click', e=>{
+    e.stopPropagation();
+    sidebar.classList.toggle('collapsed');
+});
+const roadviewContainer = document.getElementById('roadviewContainer');
+document.getElementById('toggleRoadview').addEventListener('click', ()=>{
+    roadviewContainer.classList.toggle('collapsed');
+});
+</script>
+{% endblock %}

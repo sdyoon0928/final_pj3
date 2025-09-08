@@ -1,0 +1,29 @@
+{% extends "pybo/base.html" %}
+
+{% block content %}
+<div class="register-container mx-auto" style="max-width:400px;">
+  <h2 class="mb-4">회원가입</h2>
+
+  <!-- 에러/알림 메시지 -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="POST" action="{% url 'register' %}">
+    {% csrf_token %}
+    <div class="mb-3">
+      <input type="text" name="username" class="form-control" placeholder="아이디" required>
+    </div>
+    <div class="mb-3">
+      <input type="password" name="password" class="form-control" placeholder="비밀번호" required>
+    </div>
+    <button type="submit" class="btn btn-success w-100">회원가입</button>
+  </form>
+
+  <p class="mt-3 text-center">
+    이미 계정이 있으신가요? <a href="{% url 'login' %}">로그인</a>
+  </p>
+</div>
+{% endblock %}
