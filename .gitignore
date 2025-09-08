@@ -1,0 +1,50 @@
+# ================================
+# OS & 에디터 관련
+# ================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# VSCode
+.vscode/
+
+# PyCharm / JetBrains
+.idea/
+
+# ================================
+# Python 관련
+# ================================
+# 바이트코드 캐시
+__pycache__/
+*.py[cod]
+
+# 가상환경
+venv/
+.env/
+
+# 로그 & 데이터베이스
+*.log
+*.sqlite3
+
+# 빌드/배포 산출물
+build/
+dist/
+*.egg-info/
+
+# ================================
+# Django 관련
+# ================================
+# 미디어/정적파일 (배포 시 수집)
+media/
+staticfiles/
+
+# ================================
+# Jupyter Notebook 관련
+# ================================
+# 체크포인트 파일
+.ipynb_checkpoints/
+*.ipynb_checkpoints
