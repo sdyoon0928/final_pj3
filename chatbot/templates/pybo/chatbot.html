@@ -16,7 +16,7 @@
     <h2></h2>
     <ul id="history-list">
       {% for history in histories %}
-        <!-- 🍎 ⏰ 메시지 ID를 data-id 속성으로 저장 -->
+        <!-- 🍎 ⏰ 2025-09-07 01:15 : data-id에 ChatMessage.id를 담아 개별 메시지 단위로 이동 -->
         <li data-id="{{ history.id }}" class="history-item" tabindex="0">
           <span class="history-title">{{ history.title }}</span>
           <button class="delete-btn" onclick="deleteSession('{{ history.id }}')" title="삭제">×</button>
@@ -31,10 +31,11 @@
   <main class="chat-wrap" role="main">
     <div class="chat-card">
 
-      <!-- 채팅 메시지 출력 영역 -->
+      <!-- 채팅 메시지 -->
       <div class="chat-messages" id="chat-messages" tabindex="0">
         {% for m in messages %}
           {% if m.role == "user" %}
+            <!-- 🍎 ⏰ 2025-09-07 01:15 : 각 메시지에 id="msg-메시지ID" 부여 -->
             <div class="message user-message" id="msg-{{ m.id }}">{{ m.content|linebreaksbr }}</div>
           {% elif m.role == "assistant" %}
             <div class="message bot-message" id="msg-{{ m.id }}">{{ m.content|safe }}</div>
@@ -44,8 +45,8 @@
         {% endfor %}
       </div>
 
-      <!-- 입력창 (form에 action, method 지정) -->
-      <form class="chat-input" id="chat-form" action="/chatbot/" method="post">
+      <!-- 입력창 -->
+      <form class="chat-input" id="chat-form">
         {% csrf_token %}
         <input type="text" id="chat-input-box" placeholder="여행 플랜을 입력해주세요 ✈️" autocomplete="off">
         <button type="submit" class="btn-send">보내기</button>
@@ -69,48 +70,41 @@
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
   }
-  const CSRF_TOKEN = getCookie('csrftoken');  // Django가 발급한 csrftoken 쿠키 읽기
+  const CSRF_TOKEN = getCookie('csrftoken');
 
-  // ✅ 마지막 일정 데이터 (챗봇이 만든 여행 일정 저장용)
+  // ✅ 마지막 일정 데이터
   let lastScheduleData = null;
 
-  // ✅ 채팅창을 항상 맨 아래로 스크롤
-  function scrollToBottom() {
+  // ✅ 채팅창을 맨 아래로 스크롤하는 함수
+  function scrollToBottom() {   // ⏰ 2025-09-07 00:34 수정
     const chatBox = document.getElementById("chat-messages");
     if (chatBox) {
       chatBox.scrollTop = chatBox.scrollHeight;
     }
   }
 
-  // ✅ 메시지 전송 (사용자 입력 → Django chatbot_view POST)
+  // ✅ 메시지 전송
   async function sendMessage(event) {
-    event.preventDefault(); // form 기본 제출 막기
+    event.preventDefault();
     const input  = document.getElementById("chat-input-box");
     const chatBox = document.getElementById("chat-messages");
     const userText = input.value;
-    if (!userText.trim()) return; // 공백만 입력 방지
+    if (!userText.trim()) return;
 
-    // 사용자 메시지 즉시 화면에 출력
     chatBox.insertAdjacentHTML('beforeend', `<div class="message user-message"></div>`);
     chatBox.lastElementChild.textContent = userText;
     input.value = "";
-    scrollToBottom();
+    scrollToBottom();  // ⏰ 2025-09-07 00:34 수정
 
     try {
-      // 🚨 여기 URL을 "" → "/chatbot/" 으로 명확히 지정
-      const response = await fetch("/chatbot/", {
+      const response = await fetch("", {
         method: "POST",
-        headers: { 
-          "X-CSRFToken": CSRF_TOKEN,  // Django CSRF 보호를 위해 반드시 필요
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({ message: userText }) // 서버에 보낼 데이터
+        headers: { "X-CSRFToken": CSRF_TOKEN, "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ message: userText })
       });
-
       if (!response.ok) throw new Error("네트워크 오류");
       const data = await response.json();
 
-      // 로그인 필요할 경우 처리
       if (data.login_required) {
         if (confirm("로그인이 필요합니다. 로그인 하시겠습니까?")) {
           window.location.href = "/login/";
@@ -118,7 +112,6 @@
         return;
       }
 
-      // 일반 텍스트 응답
       if (!data.yt_html && data.reply) {
         const mdHtml = marked.parse(data.reply);
         const botMsg = document.createElement("div");
@@ -126,19 +119,17 @@
         botMsg.innerHTML = mdHtml;
         chatBox.appendChild(botMsg);
         convertYoutubeLinks(botMsg);
-        scrollToBottom();
+        scrollToBottom();  // ⏰ 2025-09-07 00:34 수정
       }
 
-      // 유튜브 카드 응답
       if (data.yt_html) {
         const ytMsg = document.createElement("div");
         ytMsg.className = "message bot-message";
         ytMsg.innerHTML = `<div class="intro-text"><b>${userText}</b> 관련 브이로그 추천 영상입니다 😊</div>${data.yt_html}`;
         chatBox.appendChild(ytMsg);
-        scrollToBottom();
+        scrollToBottom();  // ⏰ 2025-09-07 00:34 수정
       }
 
-      // 일정이 감지되면 저장 버튼 활성화
       if (data.reply && (data.reply.includes("Day") || data.reply.includes("일차"))) {
         lastScheduleData = {
           title: userText,
@@ -149,6 +140,7 @@
             created_at: new Date().toISOString()
           }
         };
+
         const saveBtn = document.getElementById("saveScheduleBtn");
         if (saveBtn) {
           saveBtn.style.display = "block";
@@ -159,12 +151,12 @@
     } catch (err) {
       chatBox.insertAdjacentHTML('beforeend', `<div class="message bot-message">오류가 발생했습니다.</div>`);
       console.error(err);
-      scrollToBottom();
+      scrollToBottom();  // ⏰ 2025-09-07 00:34 수정
     }
   }
   document.getElementById('chat-form').addEventListener('submit', sendMessage);
 
-  // ✅ 일정 저장 기능 (일정 저장 API 호출)
+  // ✅ 일정 저장 기능
   document.getElementById("saveScheduleBtn").addEventListener("click", async function() {
     if (!lastScheduleData) {
         alert("저장할 일정이 없습니다. 먼저 챗봇에게 일정을 받아보세요!");
@@ -201,7 +193,6 @@
         }
 
         if (data.success) {
-            // 사이드바 히스토리에 새 일정 추가
             const historyList = document.getElementById("history-list");
             const emptyMessage = historyList.querySelector("li:not(.history-item)");
             if (emptyMessage) emptyMessage.remove();
@@ -215,6 +206,17 @@
                 <button class="delete-btn" onclick="deleteSession('${data.id}')" title="삭제">×</button>
             `;
             historyList.insertBefore(newItem, historyList.firstChild);
+            
+            // 🍎 ⏰ 2025-09-07 01:15 : 사이드바 새 항목 클릭 시도 동일하게 스크롤 이동 처리
+            newItem.addEventListener("click", (e) => {
+                if (!e.target.classList.contains('delete-btn')) {
+                    const msgId = newItem.getAttribute("data-id");
+                    const target = document.getElementById("msg-" + msgId);
+                    if (target) {
+                      target.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                }
+            });
             
             alert("일정이 성공적으로 저장되었습니다!");
             lastScheduleData = null;
@@ -230,7 +232,7 @@
     }
   });
 
-  // ✅ 유튜브 링크를 iframe으로 변환
+  // ✅ 유튜브 링크 변환
   function convertYoutubeLinks(container) {
     container.querySelectorAll("a").forEach(a => {
       const url = a.href;
@@ -250,12 +252,15 @@
   // ✅ 대화내역 삭제
   async function deleteSession(sessionId) {
     if (!confirm("이 대화를 정말 삭제하시겠습니까?")) return;
+
     try {
       const response = await fetch(`/delete_session/${sessionId}/`, {
         method: "POST",
         headers: { "X-CSRFToken": CSRF_TOKEN }
       });
+
       if (!response.ok) throw new Error("서버 응답 오류");
+
       const data = await response.json();
       if (data.success) {
         const item = document.querySelector(`.history-item[data-id="${sessionId}"]`);
@@ -271,18 +276,20 @@
     }
   }
 
-  // ✅ 사이드바 토글 (햄버거 버튼)
+  // ✅ 사이드바 토글
   const toggleBtn = document.getElementById("toggle-history-btn");
   const sidebar = document.getElementById("chat-sidebar");
+
   toggleBtn.addEventListener("click", () => {
     sidebar.classList.toggle("open");
   });
 
-  // ✅ 과거 세션 클릭 → 세션 불러오기
+  // ✅ 사이드바 클릭 시 해당 세션 로드 (2025-09-07 01:28 수정)
   document.querySelectorAll(".history-item").forEach(item => {
     item.addEventListener("click", async (e) => {
       if (!e.target.classList.contains('delete-btn')) {
         const sessionId = item.getAttribute("data-id");
+
         try {
           const res = await fetch(`/load_session/${sessionId}/`);
           if (!res.ok) throw new Error("세션 불러오기 실패");
