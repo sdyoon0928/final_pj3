@@ -163,47 +163,63 @@ def search_external_knowledge(query: str):
 
 # -------------------- 챗봇 --------------------
 def chatbot_view(request):
-    """챗봇 메인 뷰"""
-    session_id = request.GET.get("session_id")
+    """챗봇 메인 뷰 (대화 처리 및 세션 관리)"""
+
+    # -------------------- 세션 불러오기 --------------------
+    session_id = request.GET.get("session_id")   # GET 파라미터에서 session_id 가져오기
     session = None
 
-    # 세션 확인 및 생성
     if session_id and request.user.is_authenticated:
+        # 사용자가 로그인했고 session_id가 들어온 경우 → 해당 세션 불러오기
         session = ChatSession.objects.filter(id=session_id, user=request.user).first()
         if session:
             request.session["chat_session_id"] = session.id
     elif "chat_session_id" in request.session and request.user.is_authenticated:
+        # 브라우저 세션에 chat_session_id가 이미 저장되어 있다면 불러오기
         session = ChatSession.objects.filter(
             id=request.session["chat_session_id"], user=request.user
         ).first()
 
     if not session and request.user.is_authenticated:
+        # 세션이 전혀 없다면 새로 생성
         session = ChatSession.objects.create(user=request.user)
         request.session["chat_session_id"] = session.id
 
-    # -------------------- POST 요청 (사용자 입력) --------------------
+    # -------------------- POST 요청 (사용자 입력 처리) --------------------
     if request.method == "POST":
         if not request.user.is_authenticated:
+            # 로그인하지 않은 상태에서 입력 시 로그인 필요 메시지 반환
             return JsonResponse({"login_required": True}, status=200)
 
-        user_input = request.POST.get("message", "")
+        # 사용자가 보낸 입력
+        user_input = request.POST.get("message", "").strip()
 
-        # ✅ 세션 제목 자동 생성 🍎
+        # ✅ 일정 저장 버튼 활성화 여부 (프론트에 전달하기 위해 플래그 생성)
+        save_button_enabled = False
+
+        # ✅ 세션 제목 자동 생성 (단, 제목 없는 세션은 DB 저장하지 않도록 조건 추가)
         if not session.title:
             if "일정" in user_input:
                 session.title = "🗓 여행 일정 추천"
+                save_button_enabled = True   # 일정일 경우에만 저장 버튼 활성화
             elif "맛집" in user_input:
                 session.title = "🍴 맛집 추천"
             elif "브이로그" in user_input or "유튜브" in user_input:
                 session.title = "🎥 여행 브이로그 추천"
             else:
-                session.title = user_input[:20]  # 기본은 첫 입력 앞 20글자
-            session.save()
+                # ⚠️ 일반 질문인데 제목이 없으면 저장하지 않고 넘어감
+                # session.title = user_input[:20] ← 제거
+                session.title = None
 
-        # DB에 사용자 메시지 저장
-        ChatMessage.objects.create(session=session, role="user", content=user_input)
+            # 제목이 실제로 채워졌을 때만 저장
+            if session.title:
+                session.save()
 
-        # 🍎 LLM 초기화 (LangChain ChatOpenAI 사용)
+        # ✅ 사용자 메시지 DB 저장 (단, 세션이 유효할 때만)
+        if session.title:  # 제목이 있는 세션만 메시지 저장
+            ChatMessage.objects.create(session=session, role="user", content=user_input)
+
+        # -------------------- LLM 초기화 --------------------
         llm = ChatOpenAI(
             model_name=OPENAI_CHAT_MODEL,
             temperature=0.4,
@@ -213,6 +229,7 @@ def chatbot_view(request):
 
         # -------------------- 분기 처리 --------------------
         if "일정" in user_input:
+            # 일정 추천 요청일 경우 → 시스템 프롬프트로 답변 생성
             system_prompt = (
                 "너는 대한민국 국내 여행 전문 AI 어시스턴트야. "
                 "사용자가 일정 추천을 요청하면 반드시 Day1, Day2 형식으로 나눠서 출력해. "
@@ -226,6 +243,7 @@ def chatbot_view(request):
                 result = f"처리 중 오류 발생: {e}"
 
         elif _wants_vlog(user_input):
+            # 브이로그 관련 요청일 경우 → 유튜브 검색 실행
             youtube_results = yt_search(user_input)
             yt_html = _render_yt_cards(youtube_results)
             reply_html = f"""
@@ -235,12 +253,22 @@ def chatbot_view(request):
             </div>
             {yt_html}
             """
-            ChatMessage.objects.create(session=session, role="assistant", content=reply_html)
+            # 어시스턴트 메시지 저장 (단, 세션이 제목 있는 경우만)
+            if session.title:
+                ChatMessage.objects.create(session=session, role="assistant", content=reply_html)
+
             return JsonResponse(
-                {"reply": "", "yt_html": reply_html, "youtube": youtube_results, "map": []}
+                {
+                    "reply": "", 
+                    "yt_html": reply_html, 
+                    "youtube": youtube_results, 
+                    "map": [],
+                    "save_button_enabled": save_button_enabled,  # ✅ 버튼 상태 전달
+                }
             )
 
         else:
+            # 일반 질문일 경우 → LangChain 에이전트 실행
             tools = [
                 Tool(name="유튜브검색", func=yt_search, description="유튜브 브이로그 검색"),
                 Tool(name="카카오지도검색", func=kakao_geocode, description="카카오 지도 검색"),
@@ -260,34 +288,49 @@ def chatbot_view(request):
                 result = "요청하신 정보를 찾는 중 문제가 발생했어요. 😅 다시 시도해주세요."
 
         # -------------------- 응답 저장 --------------------
+        # LLM 답변 중 불필요한 [링크] 제거
         reply_clean = re.sub(r"\[.*?\]", "", result, flags=re.S).strip()
+        # 마크다운 → HTML 변환
         reply_html = markdown(reply_clean, extensions=["fenced_code", "nl2br", "tables"])
-        ChatMessage.objects.create(session=session, role="assistant", content=reply_html)
 
+        # ✅ 세션에 제목이 있을 때만 메시지 저장
+        if session.title:
+            ChatMessage.objects.create(session=session, role="assistant", content=reply_html)
+
+        # 프론트에 반환 (저장 버튼 상태 포함)
         return JsonResponse(
-            {"reply": reply_clean, "yt_html": "", "youtube": [], "map": []}
+            {
+                "reply": reply_clean, 
+                "yt_html": "", 
+                "youtube": [], 
+                "map": [],
+                "save_button_enabled": save_button_enabled,  # ✅ 버튼 상태
+            }
         )
 
     # -------------------- GET 요청 (메인 진입 시) --------------------
     histories = []
     if request.user.is_authenticated:
-        sessions = ChatSession.objects.filter(user=request.user).order_by("-created_at")
+        # 유저 세션 불러오기 (단, 제목이 없는 세션은 제외)
+        sessions = ChatSession.objects.filter(user=request.user).exclude(title__isnull=True).order_by("-created_at")
         for s in sessions:
             histories.append({
                 "id": s.id,
-                "title": s.title or "제목 없음"
+                "title": s.title,   # 제목 없음은 아예 DB에 안 들어가기 때문에 바로 출력
             })
 
+    # 템플릿 렌더링
     return render(
         request,
         "pybo/chatbot.html",
         {
-            "messages": session.messages.all() if session else [],
+            "messages": session.messages.all() if session and session.title else [],  # 제목 있는 세션만 메시지 표시
             "histories": histories,
-            "current_session": session,
+            "current_session": session if session and session.title else None,
             "kakao_key": KAKAO_API_KEY,
         },
     )
+
 
 # -------------------- 세션 메시지 로드 --------------------
 # ⏰ 2025-09-07 01:28 추가
