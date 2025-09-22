@@ -27,6 +27,12 @@ venv/
 .env/
 
 # 로그 & 데이터베이스
+
+# 환경변수
+.env
+*.env
+
+# 로그
 *.log
 *.sqlite3
 
