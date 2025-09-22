@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from markdown import markdown
 from rich.console import Console
+from django.contrib import messages  # ⭐ messages 모듈 추가
 
 # -------------------- 로컬 모듈 --------------------
 from .models import ChatSession, ChatMessage, Place, Schedule, UserProfile
@@ -346,11 +347,16 @@ def login_view(request):
             return redirect("chatbot")
         else:
             # 4) 인증 실패 → 다시 로그인 페이지에 오류 메시지 표시
-            return render(
-                request,
-                "pybo/login.html",
-                {"error": "아이디 또는 비밀번호가 틀렸습니다."}
-            )
+            # return render(
+            #     request,
+            #     "pybo/login.html",
+            #     {"error": "아이디 또는 비밀번호가 틀렸습니다."}
+            # )
+            # 4) 인증 실패 → messages 프레임워크로 오류 메시지 추가
+
+            # 에러 메시지 2줄 추가----
+            messages.error(request, "아이디 또는 비밀번호가 틀렸습니다.")  # ⭐ messages.error 사용
+            return render(request, "pybo/login.html")  # ⭐ 오류 메시지 전달 제거
     # GET 요청 → 로그인 페이지 보여주기
     return render(request, "pybo/login.html")
 

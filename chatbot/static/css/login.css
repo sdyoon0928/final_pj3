@@ -34,6 +34,19 @@ body {
   text-align: center;
 }
 
+/* 에러 메시지 추가---- */
+.error {
+  background-color: rgba(255, 230, 230, 0.92);
+  color: #8b2f2f;
+  border: 1px solid #e0a4a4;
+  font-size: 13px;
+  padding: 10px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
 
 /* ==============================
    🔹 타이틀 & 부제
