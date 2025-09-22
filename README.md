@@ -50,6 +50,7 @@ pj3/
 ├── .gitignore               # GitHub 업로드 제외 규칙
 ├── db.sqlite3               # SQLite 데이터베이스
 └── requirements.txt         # 패키지 의존성
+```
 
 ---
 
