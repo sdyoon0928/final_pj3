@@ -1,0 +1,85 @@
+/* ==============================
+   🔹 배경 비디오 전체화면
+============================== */
+#bg-video {
+  position: fixed;    /* 화면에 고정 */
+  top: 0;
+  left: 0;
+  width: 100%;        /* 가로 전체 */
+  height: 100%;       /* 세로 전체 */
+  object-fit: cover;  /* 비율 유지하면서 화면 꽉 채우기 */
+  z-index: -2;        /* 제일 뒤 */
+}
+
+/* ==============================
+   🔹 비디오 위 반투명 오버레이
+============================== */
+#bg-overlay {
+  position: fixed;    
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.555); 
+  z-index: -1;        /* 비디오 위, 컨텐츠 뒤 */
+}
+
+/* ==============================
+   🔹 전체 페이지 기본 스타일
+============================== */
+body {
+  margin: 0;
+  font-family: 'Gowun Dodum', sans-serif; /* 한글 폰트 */
+  display: flex;
+  justify-content: center;   /* 중앙 정렬 */
+  align-items: center;
+  min-height: 100vh;         /* 화면 전체 높이 */
+}
+
+/* ==============================
+   🔹 텍스트 박스
+============================== */
+.text-box {
+  text-align: center; /* 중앙 정렬 */
+  z-index: 1;         /* 오버레이 위에 나오도록 */
+  position: relative;
+}
+
+/* 제목 스타일 */
+.text-box h1 {
+  margin: 0;
+  line-height: 1.2;
+  font-size: 3.6rem;
+  font-weight: 800;
+  color: #5a3825;
+  letter-spacing: 3px; /*글자 간격 넓히기 (기본 0)*/     
+  margin-bottom: 20px;  /* ⬅️ 두 번째 h1과의 간격 */  
+}
+
+/* 두 번째 h1만 간격 조정 */
+.text-box h1 + h1 {
+  margin-top: 8px;
+  margin-bottom: 60px;
+}
+
+/* ==============================
+   🔹 버튼 스타일
+============================== */
+.btn {
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5a3825;  /* 글자 색 */
+  background: #e6d3b3;        /* 버튼 배경 */
+  border: none;
+  border-radius: 50px;      /* 둥근 버튼 */
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 0px;
+}
+
+.btn:hover {
+  background: #fff; /* hover 시 반전 */
+  color: #5a3825;
+  transform: translateY(-2px);  /* 살짝 위로 */
+}

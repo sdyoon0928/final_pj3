@@ -1,0 +1,226 @@
+{% extends 'pybo/base.html' %}
+{% block body_class %}travel-map{% endblock %}
+{% load static %}
+
+{% block content %}
+<!-- 지도 페이지 전용 CSS -->
+<link rel="stylesheet" href="{% static 'css/map.css' %}">
+<!-- 내 커스텀 css (bootstrap 뒤에 있어야 덮어쓰기 가능) -->
+<link href="{% static 'css/custom-buttons.css' %}" rel="stylesheet">
+
+<div class="d-flex main-container">
+    <!-- 왼쪽 검색/목록 (토글 가능) -->
+    <aside class="p-3 bg-light sidebar-toggle left-sidebar" id="left-sidebar">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5>장소 검색</h5>
+            <button class="btn btn-sm btn-outline-secondary" id="toggle-search">검색</button>
+        </div>
+        
+        <!-- 탭 버튼 -->
+        <ul class="nav nav-tabs mb-2" id="sidebarTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="search-tab" data-bs-toggle="tab" data-tab="search">장소 검색</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="directions-tab" data-bs-toggle="tab" data-tab="directions">길찾기</button>
+            </li>
+        </ul>
+
+        <!-- 탭 컨텐츠 -->
+        <div id="tabContents">
+            <!-- 장소 검색 탭 -->
+            <div class="tab-content" id="searchTabContent">
+                <input type="text" id="search-input" class="form-control mb-2" placeholder="검색어 입력">
+                <button class="btn btn-custom w-100 mb-3" id="search-button">검색</button>
+            
+            
+                <div class="scrollable">
+                    <ul class="list-group" id="place-list"></ul>
+                </div>
+
+            </div>
+
+            <!-- 길찾기 탭 -->
+            <div class="tab-content d-none" id="directionsTabContent">
+                <h6>출발지</h6>
+                <select id="start-point" class="form-select mb-2">
+                    <option value="">출발지 선택</option>
+                </select>
+                <h6>도착지</h6>
+                <select id="end-point" class="form-select mb-2">
+                    <option value="">도착지 선택</option>
+                </select>
+                <h6>경유지</h6>
+                <div id="waypoints-container"></div>
+                <!-- 이동 수단 선택 -->
+                <h6>이동 수단</h6>
+                <select id="transport-select" class="form-select mb-2">
+                    <option value="RECOMMEND">추천</option>
+                    <option value="TRANSIT">대중교통</option>
+                    <option value="CAR">자동차</option>
+                </select>
+                <button class="btn btn-custom w-100 mb-2" id="add-waypoint">경유지 추가</button>
+                <button class="btn btn-custom w-100 mt-2" id="get-route">길찾기</button>
+                <!-- 경로 정보 영역 -->
+                <div class="scrollable2">
+                    <div id="route-info" class="mt-3 p-2" style="background:#f1f3f5; border:1px solid #ddd; border-radius:6px;">
+                        <strong>경로 정보</strong>
+                        <div id="route-summary" style="margin-top:6px;">검색 후 경로 정보가 표시됩니다.</div>
+                        <ul id="route-steps" style="margin-top:6px; padding-left: 18px;"></ul>
+                    </div> 
+                </div>
+            </div>
+        </div>
+        
+        <!-- 일정 관리 섹션 -->
+        <div class="mt-4 schedule-section" id="schedule-section">
+            <h6>일정 관리</h6>
+            <div class="mb-2">
+                <select id="daySelector" class="form-select form-select-sm"></select>
+            </div>
+            <div id="day-schedule"></div>
+        </div>
+    </aside>
+
+    <!-- 오른쪽 지도 -->
+    <section class="flex-grow-1">
+        <div id="map" class="w-100 h-100"></div>
+    </section>
+</div>
+
+<!-- 지도 위 투명 오버레이 -->
+<div id="overlay">
+    <div id="sidebar" class="collapsed" aria-label="사이드바">
+        <h2 class="sidebar-header">
+            장소 보관함
+            <div class="header-buttons">
+                <button id="recategorizePlaces" class="recategorize-button" title="카테고리 재분류">
+                    <i class="fas fa-rotate"></i>
+                </button>
+                <button id="resetSchedule" class="reset-button">초기화</button>
+            </div>
+        </h2>
+
+        <!-- Day 선택 및 추가 -->
+        <div class="sidebar-content">
+            <div class="day-selector-section">
+                <label for="sidebarDaySelector" class="day-selector-label">📅 일정 선택</label>
+                <select id="sidebarDaySelector" class="form-select day-selector-dropdown">
+                    <option value="Day1">Day 1</option>
+                    <option value="Day2">Day 2</option>
+                    <option value="Day3">Day 3</option>
+                    <option value="Day4">Day 4</option>
+                </select>
+            </div>
+            <button id="addDay" class="btn btn-sm btn-outline-primary mt-2 w-100">Day 추가</button>
+        </div>
+
+        <!-- 카테고리별 토글 섹션 -->
+        <div id="category-sections">
+            <div class="category-section">
+                <div class="category-header" onclick="toggleCategory('숙소')">
+                    <span>🏨 숙소</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="category-content" id="숙소-content">
+                    <div class="place-list" id="숙소-list"></div>
+                </div>
+            </div>
+            
+            <div class="category-section">
+                <div class="category-header" onclick="toggleCategory('식당')">
+                    <span>🍽️ 식당</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="category-content" id="식당-content">
+                    <div class="place-list" id="식당-list"></div>
+                </div>
+            </div>
+            
+            <div class="category-section">
+                <div class="category-header" onclick="toggleCategory('카페')">
+                    <span>☕ 카페</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="category-content" id="카페-content">
+                    <div class="place-list" id="카페-list"></div>
+                </div>
+            </div>
+            
+            <div class="category-section">
+                <div class="category-header" onclick="toggleCategory('관광지')">
+                    <span>🏛️ 관광지</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="category-content" id="관광지-content">
+                    <div class="place-list" id="관광지-list"></div>
+                </div>
+            </div>
+            
+            <div class="category-section">
+                <div class="category-header" onclick="toggleCategory('기타')">
+                    <span>📍 기타</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="category-content" id="기타-content">
+                    <div class="place-list" id="기타-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="toggleBtn" aria-label="사이드바 토글">≡</button>
+</div>
+
+<!-- 로드뷰 컨테이너 -->
+<div id="roadviewContainer" class="collapsed">
+    <div id="roadviewHeader">
+        <span>로드뷰</span>
+        <button id="toggleRoadview">▲</button>
+    </div>
+    <div id="roadview" class="roadview"></div>
+</div>
+
+
+{% if kakao_js_key %}
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_js_key }}&libraries=services,roadview"></script>
+{% else %}
+<script>
+console.error('❌ 카카오맵 API 키가 없어서 스크립트를 로드할 수 없습니다.');
+</script>
+{% endif %}
+
+<!-- 지도 페이지 전용 JavaScript -->
+<script src="{% static 'js/constants.js' %}"></script>
+<script src="{% static 'js/map.js' %}"></script>
+<script src="{% static 'js/map-server.js' %}"></script>
+
+<!-- 카카오맵 API 로드 완료 후 초기화 -->
+<script>
+// 디버깅: API 키 확인
+const kakaoJsKey = '{{ kakao_js_key|default:"" }}';
+console.log('🔍 API 키 확인:', kakaoJsKey);
+console.log('🔍 API 키 길이:', kakaoJsKey.length);
+console.log('🔍 API 키 타입:', typeof kakaoJsKey);
+
+{% if kakao_js_key %}
+// 카카오맵 API 로드 완료 후 실행
+kakao.maps.load(function() {
+    console.log('✅ 카카오맵 API 로드 완료');
+    
+    // 지도 초기화 (map.js의 initializeMap)
+    initializeMap();
+    
+    // 로드뷰 초기화
+    initializeRoadview();
+    
+    // 챗봇 일정 데이터 로드
+    console.log('🔄 loadChatbotSchedule() 호출 중...');
+    loadChatbotSchedule();
+});
+{% else %}
+console.error('❌ 카카오맵 API 키가 없습니다!');
+console.error('KAKAO_JS_API_KEY 환경변수를 설정해주세요.');
+{% endif %}
+</script>
+
+{% endblock %}

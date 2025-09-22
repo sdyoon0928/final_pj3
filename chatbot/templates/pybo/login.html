@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>로그인</title>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Gugi&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-wrapper">
+    
+    <!-- 왼쪽 영역 (로고/홈페이지 이름) -->
+    <div class="login-left">
+      <h1 style="font-family: 'Gugi', cursive;">방방곡곡</h1>
+      <p>국내 AI 여행 플래너</p>
+    </div>
+
+    <!-- 오른쪽 영역 (로그인 폼) -->
+    <div class="login-right">
+      <h2>로그인</h2>
+      
+      <!-- ✅ Django messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <p class="error">⚠️ {{ message }}</p>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="아이디" required />
+        <input type="password" name="password" placeholder="비밀번호" required />
+        <button type="submit" class="login-btn">로그인</button>
+      </form>
+
+      <div class="auth-links">
+        <p>계정이 없으신가요? <a href="{% url 'register' %}">회원가입</a></p>
+        <p><a href="{% url 'find_account' %}">아이디/비밀번호 찾기</a></p>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

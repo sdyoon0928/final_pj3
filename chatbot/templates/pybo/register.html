@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>여행 - 회원가입</title>
+  <link rel="stylesheet" href="{% static 'css/register.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap" rel="stylesheet" />
+</head>
+<body>
+ 
+  <div class="login-container">
+    <h1>회원가입</h1>
+    <p class="subtitle">회원가입 후 여행챗봇을 이용해보세요</p>
+
+    {% if messages %}
+      {% for message in messages %}
+        <p class="error">⚠️ {{ message }}</p>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" action="{% url 'register' %}" onsubmit="return validatePasswords()">
+      {% csrf_token %}
+
+      <!-- 아이디 입력 + 중복 확인 버튼 -->
+      <div class="input-row">
+        <input type="text" name="username" id="username" placeholder="아이디 (3~15자 영문/숫자)" required />
+        <button type="button" class="small-btn" onclick="checkUsername()">중복확인</button>
+      </div>
+      <div id="username-message"></div>
+
+      <!-- 비밀번호 -->
+      <input type="password" name="password" id="password" placeholder="비밀번호 (8~16자 영문/숫자 조합)" required />
+
+      <!-- 비밀번호 확인 -->
+      <input type="password" name="confirm_password" id="confirm_password" placeholder="비밀번호 확인" required />
+
+      <!-- 비밀번호 오류 메시지 -->
+      <div id="password-error" style="color: red; font-size: 13px; margin-top: -12px; margin-bottom: 18px;"></div>
+
+      <!-- 이름 입력 -->
+      <input type="text" name="name" id="name" placeholder="이름" required />
+
+      <!-- 전화번호 입력 -->
+      <input type="tel" name="phone" id="phone_number" placeholder="전화번호 (- 없이 숫자만)" pattern="[0-9]{9,11}" title="숫자 9~11자리 입력" required />
+
+      <!-- 회원가입 버튼 -->
+      <button type="submit" class="btn">회원가입</button>
+    </form>
+
+    <p class="auth-link">이미 계정이 있으신가요? <a href="{% url 'login' %}">로그인</a></p>
+  </div>
+
+  <script>
+    function checkUsername() {
+      const usernameInput = document.getElementById("username");
+      const message = document.getElementById("username-message");
+      const username = usernameInput.value.trim();
+
+      if (!username || username.length < 3) {
+        message.style.color = "red";
+        message.textContent = "아이디는 3자 이상 입력해주세요.";
+        return;
+      }
+
+      fetch(`/check-username/?username=${encodeURIComponent(username)}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.exists) {
+            message.style.color = "red";
+            message.textContent = "이미 사용 중인 아이디입니다.";
+          } else {
+            message.style.color = "green";
+            message.textContent = "사용 가능한 아이디입니다.";
+          }
+        })
+        .catch(error => {
+          console.error("중복 확인 오류:", error);
+          message.style.color = "red";
+          message.textContent = "오류가 발생했습니다. 다시 시도해주세요.";
+        });
+    }
+
+    function validatePasswords() {
+      const password = document.getElementById("password").value.trim();
+      const confirm_password = document.getElementById("confirm_password").value.trim();
+      const errorDiv = document.getElementById("password-error");
+
+      if (password !== confirm_password) {
+        errorDiv.textContent = "비밀번호가 일치하지 않습니다.";
+        return false; // 폼 제출 막기
+      } else {
+        errorDiv.textContent = ""; // 에러 메시지 지우기
+        return true; // 폼 제출 허용
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+/* 베이지 톤 버튼 */
+.btn-custom {
+  background-color: #bab094;   /* 상단 바랑 어울리는 색 */
+  border-color: #bab094;
+  color: #fff;
+}
+
+.btn-custom:hover {
+  background-color: #cbc1a6;
+  border-color: #cbc1a6;
+  color: #fff;
+}
+
+.btn-custom2 {
+  background-color: #6a6351;   /* 상단 바랑 어울리는 색 */
+  border-color: #6a6351;
+  color: #fff;
+}
+
+.btn-custom2:hover {
+  background-color: #9f9479;
+  border-color: #9f9479;
+  color: #fff;
+}
+
+.btn-custom3 {
+  background-color: #9f9479;   /* 상단 바랑 어울리는 색 */
+  border-color: #9f9479;
+  color: #fff;
+}
+
+.btn-custom3:hover {
+  background-color: #bab094;
+  border-color: #bab094;
+  color: #fff;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 4px;
+  text-align: right;
+}

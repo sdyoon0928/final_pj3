@@ -1,0 +1,367 @@
+/* ================================ */
+/* 🔹 지도 페이지 스타일              */
+/* ================================ */
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+/* === 기존 스타일 유지 === */
+#overlay { 
+    position: absolute; 
+    inset: 0; 
+    pointer-events: none; 
+    z-index: 1000; 
+    background: transparent; 
+}
+
+/* 🔹 사이드바 전체 높이 제한 및 스크롤 설정 */
+#sidebar {
+    display: flex;
+    flex-direction: column; /* 내부 요소 세로 배치 */
+    height: 110vh;           /* 화면 전체 높이 */
+    overflow: hidden;        /* 외부로 튀어나가는 것 방지 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 300px;
+    background: #f8f9fa;
+    border-right: 1px solid #ddd;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.06);
+    z-index: 1001;
+    pointer-events: auto;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+#sidebar:not(.collapsed) { 
+    transform: translateX(0); 
+}
+
+#sidebar h2, #search-section {
+    flex: 0 0 auto; /* 높이 고정 */
+    padding: 14px 16px;
+    background: #e9ecef;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-buttons { display: flex; gap: 8px; }
+
+.recategorize-button { 
+    background: #8A7F66; 
+    color: white; 
+    border: none; 
+    padding: 6px 10px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.recategorize-button:hover { 
+    background: #d4c6a6; 
+}
+
+/* === 카테고리 토글 스타일 === */
+.category-section { border-bottom: 1px solid #e9ecef; }
+.category-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 12px 16px; 
+    background: #f8f9fa; 
+    cursor: pointer; 
+    transition: background-color 0.2s ease;
+    font-weight: 500;
+}
+.category-header:hover { background: #e9ecef; }
+.toggle-icon { 
+    transition: transform 0.3s ease; 
+    font-size: 12px; 
+    color: #6c757d; 
+}
+.category-content { 
+    display: none; 
+    padding: 8px 16px; 
+    background: white; 
+}
+.category-content.show { display: block; }
+.category-content.collapsed .toggle-icon { transform: rotate(-90deg); }
+
+/* === 장소 리스트 스타일 === */
+.place-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { 
+    display: inline-flex; 
+    align-items: center; 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    font-size: 13px; 
+    background: #ddd; 
+    margin: 2px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.tag:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.tag span { margin-right: 6px; }
+.tag button { 
+    border: none; 
+    background: transparent; 
+    color: #333; 
+    font-weight: bold; 
+    cursor: pointer; 
+    margin-left: 4px;
+    padding: 0 4px;
+    border-radius: 3px;
+}
+.tag button:hover { background: rgba(0,0,0,0.1); }
+
+/* === 카테고리별 색상 === */
+.tag.숙소 { background: #ffa94d; color: white; }
+.tag.식당 { background: #74c0fc; color: white; }
+.tag.카페 { background: #d0aefc; color: white; }
+.tag.관광지 { background: #63e6be; color: white; }
+.tag.기타 { background: #adb5bd; color: white; }
+
+/* === 사이드바 토글 === */
+#toggleBtn { 
+    position:absolute; 
+    top:10px; 
+    left:10px; 
+    z-index:1002; 
+    pointer-events:auto; 
+    background:#fff; 
+    border:1px solid #ccc; 
+    border-radius:6px; 
+    padding:6px 10px; 
+    cursor:pointer; 
+    transition:left 0.3s ease; 
+}
+
+#sidebar:not(.collapsed) ~ #toggleBtn { left: 310px; }
+
+/* === 로드뷰 === */
+#roadviewContainer { position:absolute; bottom:20px; right:20px; width:250px; border:1px solid #ccc; border-radius:8px; background:#fff; box-shadow:2px 2px 12px rgba(0,0,0,0.2); overflow:hidden; transition:height 0.3s ease; z-index:1500; pointer-events:auto; }
+#roadviewContainer.collapsed { height:40px; }
+#roadviewHeader { display:flex; justify-content:space-between; align-items:center; padding:4px 8px; background:#f1f3f5; font-size:14px; font-weight:500; }
+#roadviewHeader button { border:none; background:transparent; cursor:pointer; font-size:12px; }
+.select-category { margin-top:5px; margin-bottom:5px; width:100%; }
+
+/* === 왼쪽 사이드바 토글 === */
+.sidebar-toggle { transition: width 0.3s ease; }
+.sidebar-toggle.collapsed { width: 60px !important; }
+.sidebar-toggle.collapsed #search-section,
+.sidebar-toggle.collapsed #schedule-section { display: none !important; }
+
+/* === 카테고리 네비게이션 스타일 === */
+.category-navigation {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+}
+.category-navigation h6 {
+    color: #495057;
+    font-weight: 600;
+}
+#prev-category, #next-category {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+#place-selector {
+    font-size: 14px;
+}
+#add-selected-place:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* === 인라인 스타일을 클래스로 변환 === */
+.main-container {
+    height: 100vh;
+}
+
+.left-sidebar {
+    width: 300px;
+    border-right: 1px solid #ddd;
+}
+
+.schedule-section {
+    display: none;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.reset-button {
+    background: #8A7F66; 
+    color: white; 
+    border: none; 
+    padding: 6px 10px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.reset-button:hover { 
+    background: #d4c6a6; 
+}
+
+.sidebar-content {
+    padding: 8px;
+}
+
+.roadview {
+    width: 100%;
+    height: 200px;
+}
+
+/* === Day 선택기 스타일 === */
+.day-selector-section {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: linear-gradient(135deg, #C6BDAA 0%, #C6BDAA 100%) !important;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.day-selector-label {
+    display: block;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.day-selector-dropdown {
+    background: #8A7F66;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.day-selector-dropdown:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+}
+
+.day-selector-dropdown:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background: #7C725C;
+}
+
+/* === 장소 항목 스타일 === */
+.place-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 4px 0;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.place-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.place-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    flex: 1;
+}
+
+.remove-place {
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.remove-place:hover {
+    background: #ff3742;
+    transform: scale(1.1);
+}
+
+.no-places {
+    padding: 12px;
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* 🔹 검색 결과 리스트 스크롤 가능하도록 설정 */
+#place-list {
+    flex: 1 1 auto;   /* 남은 공간 차지 */
+    min-height: 0;    /* 중요! flex 안에서 스크롤 문제 방지 */
+    overflow-y: auto; /* 내부 스크롤 가능 */
+    padding-right: 8px;
+}
+
+/* 스크롤바 스타일 */
+#place-list::-webkit-scrollbar { width: 6px; }
+#place-list::-webkit-scrollbar-thumb { 
+    background: rgba(0, 0, 0, 0.2); 
+    border-radius: 3px; 
+}
+#place-list::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.3); }
+#place-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); }
+
+
+.scrollable {
+    padding: 0px 0px;
+    height: 500px;       /* div 높이 지정 */
+    overflow-y: auto;    /* 세로 스크롤 자동 생성 */
+    border: 0px solid #ccc;  /* 선택사항: 테두리 */
+}
+
+.scrollable2 {
+    padding: 5px 5px;
+    height: 240px;       /* div 높이 지정 */
+    overflow-y: auto;    /* 세로 스크롤 자동 생성 */
+    border: 0px solid #ccc;  /* 선택사항: 테두리 */
+}
+
+#place-list > .place-item > .place-name {
+    font-size: 10px;
+}
+
+/* travel-map 페이지에서는 사용자 꾸미기 옵션(⚙️ 버튼) 숨김 */
+body.travel-map .chat-style-options {
+  display: none !important;
+}

@@ -1,0 +1,242 @@
+/* ================================ */
+/* 🔹 챗봇 페이지 스타일              */
+/* ================================ */
+
+/* 지도 영역 스타일 */
+.map-area {
+  margin-top: 20px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.map-header {
+  background: linear-gradient(135deg, #bab094 0%, #6a6351 100%);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.map-header h4 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.map-container-inner {
+  height: 400px;
+  width: 100%;
+}
+
+/* ================================ */
+/* 🔹 다중 선택 삭제 기능 스타일      */
+/* ================================ */
+
+/* 다중 삭제 컨트롤 영역 */
+.bulk-delete-controls {
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 10px;
+}
+
+.bulk-delete-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.bulk-delete-header span {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.bulk-delete-header .btn {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+/* 체크박스가 보이는 상태의 히스토리 아이템 */
+.history-item.select-mode {
+  padding-left: 35px;
+  position: relative;
+}
+
+.history-item.select-mode .history-checkbox {
+  display: block !important;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.history-item.select-mode .delete-btn {
+  display: none;
+}
+
+/* 선택된 아이템 하이라이트 */
+.history-item.selected {
+  background-color: #e3f2fd !important;
+  border-left: 3px solid #2196f3;
+}
+
+/* 선택 모드 토글 버튼 */
+.select-mode-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.select-mode-toggle:hover {
+  background: #5a6268;
+}
+
+.select-mode-toggle.active {
+  background: #dc3545;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .map-container-inner {
+    height: 300px;
+  }
+  
+  .map-header {
+    padding: 10px 15px;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .bulk-delete-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .bulk-delete-header .btn {
+    width: 100%;
+  }
+}
+
+
+.chat-input {
+  position: fixed;
+  bottom: 20px; /* 하단 여백 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%; /* 가로 길이 조절 (원하시면 60~90%도 가능) */
+  max-width: 900px;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 20px;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.chat-messages {
+  padding-bottom: 100px;
+}
+
+.schedule-save-container {
+  position: fixed;
+  bottom: 80px; /* 입력창 위로 띄우기 (입력창이 bottom: 20px이므로 적당히 여유 있게) */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001; /* 입력창보다 높게 */
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background-color: transparent;
+  padding: 10px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+
+/* 🎀 플로팅 옵션 버튼 (상단 오른쪽) */
+.chat-style-options {
+  position: fixed;
+  top: 20px; 
+  right: 70px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* 패널이 버튼 오른쪽/아래로 나오도록 */
+}
+
+/* ⚙️ 버튼 */
+.options-toggle {
+  background: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+.options-toggle:hover {
+    transform: scale(1.2); /* 1.2배로 커짐 */
+    transition: transform 0.2s ease; /* 부드럽게 커지도록 */
+}
+
+/* 옵션 패널 */
+.options-panel {
+  display: none;              /* JS 토글로 열림 */
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;            /* 버튼 아래 간격 */
+  min-width: 180px;           /* 최소 패널 폭 */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-size: 14px;
+  align-items: flex-start;     /* 내용 좌측 정렬 */
+}
+
+/* 옵션 항목 */
+.options-panel label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  gap: 5px;
+}
+
+/* 선택창, 범위, 컬러 입력 같은 컨트롤 요소 */
+.options-panel select,
+.options-panel input[type="range"],
+.options-panel input[type="color"] {
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+/* 여행지 맵 화면에서는 숨김 */
+    body.travel-map .chat-style-options {
+        display: none !important;
+    }

@@ -1,0 +1,126 @@
+{% extends "pybo/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- ========================================================================================== -->
+<!-- 📌 햄버거 버튼 (과거 대화 열기/닫기 토글) -->
+<button id="toggle-history-btn" aria-label="과거 대화 열기" title="과거 대화 열기">
+  &#9776;
+</button>
+
+<div class="chat-container">
+
+  <!-- 📌 좌측 사이드바 (과거 대화 목록 표시 영역) -->
+  <aside class="chat-sidebar" id="chat-sidebar" aria-label="과거 대화 목록">
+    <h2></h2>
+    <!-- 선택 모드 토글 버튼 -->
+    <button id="select-mode-toggle" class="select-mode-toggle" title="다중 선택 모드">
+      <i class="fas fa-check"></i>
+    </button>
+    
+    <!-- 다중 삭제 컨트롤 영역 -->
+    <div class="bulk-delete-controls" id="bulk-delete-controls" style="display: none;">
+      <div class="bulk-delete-header">
+        <span id="selected-count">0개</span>
+        <button id="bulk-delete-btn" class="btn btn-danger btn-sm" disabled>선택<br>삭제</button>
+        <button id="select-all-btn" class="btn btn-outline-secondary btn-sm">전체<br>선택</button>
+      </div>
+    </div>
+    
+    <ul id="history-list">
+      {% for history in histories %}
+        <!-- 🍎 과거 대화 항목 (세션별) -->
+        <!-- data-id 속성에 세션 ID 저장 → 클릭 시 해당 세션 불러오기 -->
+        <li data-id="{{ history.id }}" class="history-item" tabindex="0">
+          <!-- 체크박스 (다중 선택용) -->
+          <input type="checkbox" class="history-checkbox" value="{{ history.id }}" style="display: none;">
+          <!-- 대화 제목 표시 -->
+          <span class="history-title">{{ history.title }}</span>
+          <!-- 삭제 버튼 (개별 세션 삭제) -->
+          <button class="delete-btn" onclick="deleteSession('{{ history.id }}')" title="삭제">
+            <i class="fas fa-xmark"></i>
+          </button>
+        </li>
+      {% empty %}
+        <!-- 과거 대화가 없을 경우 -->
+        <li>과거 대화가 없습니다.</li>
+      {% endfor %}
+    </ul>
+  </aside>
+
+  <!-- 📌 메인 채팅 영역 -->
+  <main class="chat-wrap" role="main">
+    <div class="chat-card">
+
+      <!-- 채팅 메시지 출력 영역 -->
+      <div class="chat-messages" id="chat-messages" tabindex="0">
+        {% for m in messages %}
+          {% if m.role == "user" %}
+            <!-- 사용자 메시지 -->
+            <div class="message user-message" id="msg-{{ m.id }}">
+              {{ m.content|linebreaksbr }}
+              <div class="timestamp">{{ m.created_at|date:"Y-m-d H:i" }}</div>  <!-- ✅ 추가 -->
+            </div>
+          {% elif m.role == "assistant" %}
+            <div class="bot-message-wrapper">
+              <i class="fab fa-github-alt bot-floating-icon"></i>
+              <div class="message bot-message" id="msg-{{ m.id }}">
+                {{ m.content|safe }}
+                <div class="timestamp">{{ m.created_at|date:"Y-m-d H:i" }}</div>  <!-- ✅ 추가 -->
+              </div>
+            </div>
+          {% endif %}
+        {% empty %}
+          <div class="bot-message-wrapper">
+            <i class="fab fa-github-alt bot-floating-icon"></i>
+            <div class="message bot-message">
+              안녕하세요! 어디로 가실 예정인가요?
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- 입력창 (사용자 입력 Form) -->
+      <form class="chat-input" id="chat-form" action="/chatbot/" method="post">
+        {% csrf_token %}
+        <!-- 사용자 입력 필드 -->
+        <input type="text" id="chat-input-box" placeholder="여행 플랜을 입력해주세요 ✈️" autocomplete="off">
+        <!-- 메시지 전송 버튼 -->
+        <button type="submit" class="btn-send">보내기</button>
+      </form>
+
+      <!-- 일정 저장 및 맵 보기 버튼 (기본적으로 숨김) -->
+      <div class="schedule-save-container" id="scheduleButtons" style="display: none;">
+        <button id="saveScheduleBtn" class="btn btn-custom2" disabled>이 일정 저장하기</button>
+        <button id="viewOnMapBtn" class="btn btn-custom3" disabled>맵에서 보기</button>
+        <button id="showMapBtn" class="btn btn-custom" disabled>지도 보기</button>
+      </div>
+
+    </div>
+    
+    <!-- 지도 영역 (숨김 상태로 시작) -->
+    <div class="map-area" id="map-area" style="display:none;">
+      <div class="map-header">
+        <h4>🗺️ 추천 장소 지도</h4>
+        <button id="hideMapBtn" class="btn btn-sm btn-outline-light">지도 숨기기</button>
+      </div>
+      <div id="chatbot-map" class="map-container-inner"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ========================================================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_js_key }}"></script>
+<!-- 챗봇 전용 CSS -->
+<link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+
+<!-- 내 커스텀 css (bootstrap 뒤에 있어야 덮어쓰기 가능) -->
+<link href="{% static 'css/custom-buttons.css' %}" rel="stylesheet">
+
+<!-- 챗봇 전용 JavaScript -->
+<script src="{% static 'js/chatbot.js' %}"></script>
+
+
+{% endblock %}

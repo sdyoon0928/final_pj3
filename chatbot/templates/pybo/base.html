@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>한국 여행</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- ✅ Google Fonts 추가 (여기에 넣기) -->
+  <link href="https://fonts.googleapis.com/css2?family=Cute+Font&family=Do+Hyeon&family=Gamja+Flower&family=Jua&family=Single+Day&family=Stylish&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Cute+Font&family=Do+Hyeon&family=Gamja+Flower&family=Gugi&family=Hi+Melody&family=Jua&family=Nanum+Brush+Script&family=Nanum+Pen+Script&family=Poor+Story&family=Single+Day&family=Song+Myung&family=Stylish&family=Sunflower&family=Yeon+Sung&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Gugi&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6.x CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- CSS -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <!-- ✅ 상단 네비게이션 -->
+  <nav class="navbar navbar-expand-lg" style="background: transparent;">
+    <div class="container d-flex justify-content-between align-items-center">
+      
+      <!-- 로고 (왼쪽 고정) - 메인화면으로 이동 -->
+      <a class="navbar-brand fw-bold text-white" href="{% url 'chatbot' %}" style="font-family:'Gugi',cursive; cursor: pointer;">
+        방방곡곡 
+      </a>
+
+      <!-- 메뉴 + 로그인 상태 (오른쪽 정렬) -->
+      <div class="d-flex align-items-center gap-4">
+        <!-- 메뉴 -->
+        <ul class="navbar-nav d-flex flex-row gap-3 mb-0">
+          <li class="nav-item">
+            <a class="nav-link text-white home-reset-btn" href="{% url 'chatbot' %}">홈</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'map' %}">여행지 맵</a>
+          </li>
+        </ul>
+
+        <!-- 로그인 상태 -->
+        {% if user.is_authenticated %}
+        <div class="d-flex align-items-center gap-2">
+          <span class="navbar-text text-white">
+            {{ user.username }} 님 환영합니다
+          </span>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-light btn-sm rounded-pill px-3">로그아웃</button>
+          </form>
+        </div>
+        {% else %}
+        <div class="d-flex gap-2">
+          <a href="{% url 'login' %}" class="btn btn-light btn-sm rounded-pill px-3">로그인</a>
+          <a href="{% url 'register' %}" class="btn btn-outline-light btn-sm rounded-pill px-3">회원가입</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+            <!-- 🎨 사용자 꾸미기 옵션 (오른쪽 하단 플로팅) -->
+    <div class="chat-style-options" id="chat-style-options">
+      <button class="options-toggle" id="options-toggle">⚙️</button>
+      
+      <div class="options-panel" id="options-panel">
+        <label>
+          폰트:
+          <select id="font-select">
+            <option value="'Noto Sans KR', sans-serif">기본</option>
+            <option value="'Jua', sans-serif">주아체</option>
+            <option value="'Do Hyeon', sans-serif">도현체</option>
+            <option value="'Gamja Flower', cursive">감자꽃체</option>
+            <option value="'Cute Font', cursive">큐트폰트</option>
+            <option value="'Single Day', cursive">싱글데이</option>
+            <option value="'Stylish', sans-serif">스타일리시</option>
+            <option value="'Nanum Pen Script', cursive">나눔펜</option>
+            <option value="'Nanum Brush Script', cursive">나눔브러시</option>
+            <option value="'Black Han Sans', sans-serif">블랙한산스</option>
+            <option value="'Gugi', cursive">구기체</option>
+            <option value="'Poor Story', cursive">푸어스토리</option>
+            <option value="'Song Myung', serif">송명체</option>
+            <option value="'Hi Melody', cursive">하이멜로디</option>
+            <option value="'Yeon Sung', cursive">연성체</option>
+            <option value="'Sunflower', sans-serif">해바라기체</option>
+          </select>
+        </label>
+
+        <label>
+        폰트 크기:
+        <input type="range" id="font-size-range" min="12" max="24" step="1" value="16">
+      </label>
+
+        <label>
+          말풍선 색:
+          <input type="color" id="bubble-color" value="#f0f0f0">
+        </label>
+        <label>
+          글씨 색:
+          <input type="color" id="font-color" value="#000000">
+        </label>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ✅ block content -->
+  <div class="container-fluid p-0">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+  
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

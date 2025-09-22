@@ -1,0 +1,121 @@
+/* ==============================
+   🔹 전체 레이아웃 (빈티지 감성)
+============================== */
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  font-family: 'Gowun Dodum', sans-serif;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background:
+  linear-gradient(135deg, rgba(252, 227, 191, 0.678)),
+   url('/static/img/로그인2.jpg') center/cover no-repeat;
+
+  color: #5a3825;  /* 따뜻한 브라운 글자 */
+}
+
+/* ==============================
+   🔹 로그인 카드
+============================== */
+.login-wrapper {
+  background: #fffaf3; /* 크림톤 종이색 */
+  border: 2px solid #e0c097;
+  border-radius: 16px;
+  width: 400px;          /* 원하는 카드 폭 */
+  max-width: 95%;
+  min-height: 500px;     /* 높이는 최소값 */
+  padding: 40px 20px;    /* 내부 여백을 조금 줄임 */
+  box-shadow: 6px 6px 16px rgba(0,0,0,0.1);
+  animation: fadeIn 0.7s ease;
+  text-align: center;
+}
+
+
+/* ==============================
+   🔹 타이틀 & 부제
+============================== */
+.login-wrapper h1 {
+  font-family: 'Gugi', cursive;  /* 레트로 타이틀 */
+  font-size: 48px;
+  margin-bottom: 8px;
+  color: #5a3825;
+}
+
+.login-wrapper p {
+  font-size: 14px;
+  color: #8b6f47;
+  margin-bottom: 28px;
+}
+
+/* ==============================
+   🔹 입력창
+============================== */
+.login-wrapper input {
+  width: calc(100% - 20px);  /* 카드 폭보다 살짝 좁게 */
+  max-width: 300px;          /* 카드가 더 줄어들면 제한 */
+  padding: 12px;
+  margin: 8px auto;
+  border: 1px solid #d8b894;
+  border-radius: 8px;
+  background: #fffdf8;
+  font-size: 14px;
+  display: block;
+}
+
+.login-wrapper input:focus {
+  border-color: #b98b5d;
+  box-shadow: 0 0 6px rgba(185, 139, 93, 0.3);
+}
+
+/* ==============================
+   🔹 버튼
+============================== */
+.login-btn {
+  width: calc(100% - 20px);  /* 입력창과 동일한 폭 */
+  max-width: 300px;
+  padding: 12px 0;
+  margin: 16px auto;
+  background: #c4967b;
+  border: none;
+  border-radius: 50px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  display: block;
+}
+
+.login-btn:hover {
+  background: #5a3825;
+  transform: translateY(-2px);
+}
+
+/* ==============================
+   🔹 하단 링크
+============================== */
+.auth-links {
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.auth-links a {
+  color: #5a3825;
+  text-decoration: none;
+}
+
+.auth-links a:hover {
+  text-decoration: underline;
+}
+
+/* ==============================
+   🔹 페이드인 효과
+============================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

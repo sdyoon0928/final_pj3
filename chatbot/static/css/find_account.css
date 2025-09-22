@@ -1,0 +1,181 @@
+/* ==============================
+   🔹 전체 레이아웃 (빈티지 감성)
+============================== */
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  /* font-family: 'Gowun Dodum', sans-serif; */
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background:
+    linear-gradient(135deg, rgba(252, 227, 191, 0.7)),
+    url('/static/img/로그인2.jpg') center/cover no-repeat;
+
+  color: #5a3825;  /* 텍스트 기본 브라운 */
+}
+
+/* ==============================
+   🔹 카드
+============================== */
+.login-container {
+  background: #fffaf3;              /* 종이 질감 느낌의 크림색 */
+  border: 2px solid #e0c097;        /* 베이지 톤 테두리 */
+  border-radius: 16px;              /* 카드 모서리 둥글게 */
+  width: 400px;                     /* 카드 가로 폭 */
+  max-width: 95%;                   
+  min-height: 500px;                
+  padding: 40px 20px;               
+  box-shadow: 6px 6px 16px rgba(0,0,0,0.1);
+  animation: fadeIn 0.7s ease;      
+  text-align: center;               
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==============================
+   🔹 타이틀 & 부제
+============================== */
+.login-left h1 {
+  /* font-family: 'Gugi', cursive;   */
+  font-size: 42px;
+  margin-bottom: 8px;
+  color: #5a3825;
+  text-align: center;
+}
+
+p.subtitle {
+  font-size: 14px;
+  color: #8b6f47;
+  margin-top: 0px;
+  margin-bottom: 30px;
+}
+
+/* ==============================
+   🔹 입력창
+============================== */
+.login-container input[type="text"],
+.login-container input[type="password"],
+.login-container input[type="email"],
+.login-container input[type="tel"] {
+  width: calc(100% - 20px);  /* 카드 폭보다 살짝 좁게 */
+  max-width: 300px;          /* 카드가 더 줄어들면 제한 */
+  padding: 14px;
+  height: auto;
+  font-size: 15px;
+  border-radius: 8px;
+  border: 1px solid #d8b894;     /* 베이지 톤 테두리 */
+  background: #fffdf8;           /* 따뜻한 크림 배경 */
+  color: #5a3825;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.login-container input:focus {
+  border-color: #b98b5d;
+  box-shadow: 0 0 6px rgba(185, 139, 93, 0.3);
+  outline: none;
+}
+
+/* ==============================
+   🔹 버튼 (회원가입 / 확인 등)
+============================== */
+button.btn,
+.login-container button {
+  width: calc(100% - 20px);  /* 입력창과 동일한 폭 */
+  max-width: 280px;
+  background: #c4967b;         /* 따뜻한 브라운톤 */
+  color: #fff;
+  border: none;
+  padding: 14px 0;
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  margin-top: 16px;
+}
+
+button.btn:hover,
+.login-container button:hover {
+  background: #5a3825;
+  transform: translateY(-2px);
+}
+
+/* ==============================
+   🔹 작은 버튼 (중복확인 등)
+============================== */
+.small-btn {
+  height: 44px;
+  padding: 0 16px;
+  background: #c4967b;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.small-btn:hover {
+  background: #5a3825;
+  transform: scale(1.05);
+}
+
+/* ==============================
+   🔹 하단 링크
+============================== */
+.auth-link {
+  margin-top: 22px;
+  font-size: 13px;
+  color: #5a3825;
+  opacity: 0.85;
+  text-align: center;
+}
+
+.auth-link a {
+  color: #5a3825;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.auth-link a:hover {
+  text-decoration: underline;
+}
+
+/* ==============================
+   🔹 에러 메시지 (기능 그대로)
+============================== */
+.error {
+  background-color: rgba(255, 230, 230, 0.92);
+  color: #8b2f2f;
+  border: 1px solid #e0a4a4;
+  font-size: 13px;
+  padding: 10px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* ==============================
+   🔹 애니메이션
+============================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

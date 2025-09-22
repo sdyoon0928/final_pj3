@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>인덱스</title>
+  <link rel="stylesheet" href="{% static 'css/index.css' %}" />
+  
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Gugi&display=swap" rel="stylesheet">
+
+</head>
+<body>
+   <video autoplay muted loop playsinline id="bg-video">
+     <source src="{% static 'img/index.mp4' %}" type="video/mp4">
+     브라우저가 영상을 지원하지 않습니다.
+  </video>
+  <div id="bg-overlay"></div>
+
+  <div class="center">
+    <!-- 왼쪽 텍스트 -->
+    <div class="text-box">
+      <h1>당신만의 맞춤 여행 플래너</h1>
+      <h1 style="font-family: 'Gugi', cursive;">방방곡곡</h1>
+      
+      <a href="/chatbot/"><button class="btn">AI 추천 받기</button></a>
+    </div>
+
+ 
+  </div>
+</body>
+</html>

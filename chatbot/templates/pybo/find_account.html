@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>아이디 / 비밀번호 찾기</title>
+  <link rel="stylesheet" href="{% static 'css/find_account.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Gugi&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <h1>아이디 / 비밀번호 찾기</h1>
+    <p class="subtitle">이름과 전화번호로 계정 정보를 찾을 수 있어요</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="text" name="name" placeholder="이름을 입력하세요" required />
+      <input type="text" name="phone" placeholder="전화번호를 입력하세요" required />
+      <button type="submit">확인</button>
+    </form>
+
+    <p class="auth-link">
+      <a href="{% url 'login' %}">← 로그인 페이지로 돌아가기</a>
+    </p>
+  </div>
+
+  {% if result %}
+    <!-- ✅ 모달 구조 -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h3><span class="checkmark"></span>[ 계정 정보 ]</h3>
+        <div class="account-info">
+          <p><strong>아이디:</strong> <span class="username">{{ result.username }}</span></p>
+          <p><strong>초기화된 비밀번호:</strong> <span class="password">{{ result.new_password }}</span></p>
+        </div>
+        <p class="note">로그인 후 비밀번호를 꼭 변경해주세요.</p>
+        <button id="closeBtn">닫기</button>
+      </div>
+    </div>
+  {% endif %}
+</body>
+
+<!-- ✅ 모달 닫기 스크립트 -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const closeBtn = document.getElementById("closeBtn");
+    const modal = document.getElementById("modal");
+
+    if (closeBtn && modal) {
+      closeBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+      });
+    }
+  });
+</script>
+</html>
