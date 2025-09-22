@@ -11,7 +11,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+SECRET_KEY = 'django-insecure-0^a9$5b##e@*=uwp_gm@rojj$jak8)2-*f6&yhxc-h0_c3c$(2'
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")  # .env/환경변수에 넣어두기
 KAKAO_JS_API_KEY = os.getenv("KAKAO_JS_API_KEY", "")  # 카카오 JavaScript API 키
 KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY", "")  # 카카오 REST API 키
