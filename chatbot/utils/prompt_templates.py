@@ -374,8 +374,23 @@ def get_general_prompt(request_type, user_input, travel_destination=None, sessio
 
 {tools_desc}
 
-**응답 형식**: 장소명, 주소, 좌표(카카오지도검색), 운영시간/휴무일(구글플레이스상세), 비용, 유튜브 영상 링크
+## ⚠️ 출력 규칙
+- 반드시 JSON 형식으로만 출력하세요.
+- JSON 이외의 설명, 마크다운, 불필요한 텍스트는 절대 포함하지 마세요.
+- 키 구조는 다음 예시를 따르세요:
+
+{{
+  "장소명": "홍천군",
+  "주소": "대한민국 강원특별자치도 홍천군",
+  "좌표": {{ "lat": 37.6899, "lng": 127.8880 }},
+  "운영시간": "정보 없음",
+  "전화번호": "없음",
+  "비용": "N/A",
+  "날씨": "맑음, 기온 23°C",   # ✅ 날씨 필드 추가
+  "유튜브": "https://youtu.be/xxxx"
+}}
 """
+
 
 
 def get_conversation_context(session, conversation_history):

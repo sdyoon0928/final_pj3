@@ -20,6 +20,7 @@ from ..models import ChatMessage, Schedule
 from ..utils.youtube import yt_search, _render_yt_cards
 from ..utils.maps import google_place_details, kakao_geocode
 from ..utils.knowledge import search_external_knowledge
+from ..utils.weather import get_weather_info, get_weather_info_by_coords
 from ..utils.coordinates import extract_places_from_response, search_place_coordinates
 from ..utils.coordinate_extractor import extract_coordinates_from_schedule_data, extract_coordinates_from_response, format_places_info
 from ..utils.prompt_templates import get_schedule_prompt, get_general_prompt
@@ -328,11 +329,13 @@ def handle_general_request(user_input, conversation_history, session=None):
     """
     # 일반 질문 → LangChain Agent 실행
     tools = [
-        Tool(name="유튜브검색", func=yt_search, description="지역명/장소명으로 여행 브이로그, 맛집 리뷰, 관광지 영상을 찾아줍니다. 맛집 추천 시에는 맛집 리뷰 영상도 함께 검색합니다. 예: '서울 여행 브이로그', '강릉 맛집', '제주도 vlog', '경복궁 브이로그', '이태원 맛집'"),
-        Tool(name="카카오지도검색", func=kakao_geocode, description="장소명으로 검색하여 정확한 위도, 경도 좌표와 주소를 찾아줍니다. 모든 장소의 정확한 위치 정보가 필요할 때 사용합니다. 예: '경복궁', '제주도 한라산', '부산 해운대', '이태원 맛집'"),
-        Tool(name="구글플레이스상세", func=google_place_details, description="장소명으로 검색하여 운영시간, 전화번호, 정확한 주소, 평점 등 상세 정보를 찾아줍니다. 맛집이나 관광지의 실용적인 정보가 필요할 때 사용합니다. 예: '경복궁', '제주도 카페', '부산 맛집', '이태원 식당'"),
-        Tool(name="외부지식검색", func=search_external_knowledge, description="지역명이나 관광지명으로 검색하여 역사, 문화, 특징 등 배경 정보를 찾아줍니다. 관광지의 의미나 역사적 배경이 필요할 때 사용합니다. 예: '제주도', '경복궁', '부산 감천문화마을', '이태원'"),
+        Tool(name="유튜브검색", func=yt_search, description="지역명/장소명으로 여행 브이로그, 맛집 리뷰, 관광지 영상을 찾아줍니다."),
+        Tool(name="카카오지도검색", func=kakao_geocode, description="장소명으로 검색하여 정확한 위도, 경도 좌표와 주소를 찾아줍니다."),
+        Tool(name="구글플레이스상세", func=google_place_details, description="장소명으로 검색하여 운영시간, 전화번호, 평점 등 상세 정보를 찾아줍니다."),
+        Tool(name="외부지식검색", func=search_external_knowledge, description="지역명이나 관광지명으로 역사, 문화, 특징 등 배경 정보를 찾아줍니다."),
+        Tool(name="날씨검색", func=get_weather_info, description="특정 지역의 현재 날씨와 기온을 확인합니다. 예: '서울 날씨', '부산 오늘 날씨'"),  # ✅ 추가됨
     ]
+
 
     # Agent 초기화: ChatGPT 수준의 빠른 응답을 위한 최적화
     agent = initialize_agent(
@@ -359,6 +362,10 @@ def handle_general_request(user_input, conversation_history, session=None):
     # 맛집 관련 키워드 검사
     if any(keyword in clean_input for keyword in ["맛집", "음식", "식당", "레스토랑", "카페"]):
         request_type = "맛집 추천"
+
+    # 날씨 관련 키워드 검사
+    elif any(keyword in clean_input for keyword in ["날씨", "기온", "날씨 정보"]):
+        request_type = "날씨 정보"
 
     # 브이로그/영상 관련 키워드 검사 (더 포괄적으로)
     elif any(keyword in clean_input for keyword in ["브이로그", "vlog", "유튜브", "영상", "동영상", "비디오", "보여줘", "여행브이로그"]):
@@ -505,11 +512,13 @@ def handle_general_request(user_input, conversation_history, session=None):
         
         # Agent 오류 시 간단한 응답 생성
         if "맛집" in user_input or "음식" in user_input:
-            result = f"죄송합니다. 현재 {user_input}에 대한 정보를 가져오는 중에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+            result = f"죄송합니다. 현재 {user_input}에 대한 정보를 가져오는 중에 오류가 발생했습니다."
         elif "브이로그" in user_input or "유튜브" in user_input:
-            result = f"죄송합니다. 현재 {user_input}에 대한 영상을 찾는 중에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+            result = f"죄송합니다. 현재 {user_input}에 대한 영상을 찾는 중에 오류가 발생했습니다."
+        elif "날씨" in user_input:  # ✅ 날씨 오류 처리도 따로 분기
+            result = f"죄송합니다. 현재 {user_input}에 대한 날씨 정보를 가져오는 중에 오류가 발생했습니다."
         else:
-            result = f"죄송합니다. 현재 {user_input}에 대한 정보를 처리하는 중에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-    
+            result = f"죄송합니다. 현재 {user_input}에 대한 정보를 처리하는 중에 오류가 발생했습니다."
+
     console.log(f"✅ 최종 응답: {result[:100]}...")
     return result

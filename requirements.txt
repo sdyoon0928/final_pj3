@@ -8,6 +8,9 @@ django
 django-extensions
 Werkzeug
 
+
+python-dotenv
+
 # Python OpenSSL Library is required to use runserver_plus with sslsupport.
 # Install via pip (pip install pyOpenSSL).
 pyOpenSSL

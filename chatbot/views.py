@@ -26,6 +26,7 @@ from .services.chat_handlers import (
 )
 from .utils.sessions import get_or_create_session
 from .utils.youtube import _wants_vlog
+from .utils.weather import get_weather_info, get_weather_info_by_coords
 from .utils.maps import google_place_details, clean_place_query
 from .utils.coordinates import extract_places_from_response, search_place_coordinates
 from .utils.coordinate_extractor import extract_coordinates_from_schedule_data, extract_coordinates_from_response, format_places_info
@@ -234,10 +235,14 @@ def chatbot_view(request):
         
         # ✅ 좌표 정보가 있는 경우 places 데이터 추가 (일정 및 일반 요청 모두)
         if places_with_coords:
+            for p in places_with_coords:
+                lat, lon = p.get("lat"), p.get("lng")
+                if lat and lon:
+                    p["weather"] = get_weather_info_by_coords(lat, lon)   # 🔹 최소 수정: 날씨만 추가
+
             response_data["places"] = places_with_coords
             response_data["map"] = places_with_coords  # 지도 표시용
-            console.log(f"JSON 응답에 좌표 정보 포함: {len(places_with_coords)}개 장소")  # 디버깅용
-
+            console.log(f"JSON 응답에 좌표+날씨 포함: {len(places_with_coords)}개 장소")
         # 추가----
         # ✅ 🔹여기에 브이로그 추가🔹
         if _wants_vlog(user_input):

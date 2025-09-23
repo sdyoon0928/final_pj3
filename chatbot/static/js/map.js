@@ -1772,9 +1772,9 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleSearchBtn.addEventListener('click', () => {
             leftSidebar.classList.toggle('collapsed');
             if (leftSidebar.classList.contains('collapsed')) {
-                toggleSearchBtn.textContent = '검색';
+                toggleSearchBtn.textContent = '>>';
             } else {
-                toggleSearchBtn.textContent = '접기';
+                toggleSearchBtn.textContent = '<<';
             }
         });
     }
