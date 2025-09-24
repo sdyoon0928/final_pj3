@@ -1784,25 +1784,137 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('next-category').addEventListener('click', nextCategory);
     document.getElementById('add-selected-place').addEventListener('click', addSelectedPlace);
 
+    // 요소 찾기
     const roadviewContainer = document.getElementById('roadviewContainer');
-    document.getElementById('toggleRoadview').addEventListener('click', ()=>{
-        roadviewContainer.classList.toggle('collapsed');
-    });
-
-    // 페이지 로드 시 카테고리별 장소 목록 업데이트 (챗봇 데이터 로드 후)
-    setTimeout(() => {
-        updateCategoryPlaces();
-    }, 1000);
+    const toggleRoadviewBtn = document.getElementById('toggleRoadview');
     
-    // 일정 데이터 변경 감지를 위한 주기적 체크 (1초마다)
-    setInterval(() => {
-        const currentSchedule = loadSchedule();
-        const currentScheduleStr = JSON.stringify(currentSchedule);
-        const lastScheduleStr = JSON.stringify(schedule);
+    console.log('roadviewContainer 요소:', roadviewContainer);
+    console.log('toggleRoadviewBtn 요소:', toggleRoadviewBtn);
+    
+    if (roadviewContainer) {
+        console.log('roadviewContainer 초기 클래스:', roadviewContainer.className);
+        console.log('roadviewContainer 초기 스타일:', {
+            width: roadviewContainer.style.width,
+            height: roadviewContainer.style.height,
+            display: getComputedStyle(roadviewContainer).display
+        });
+    }
+    
+    if (toggleRoadviewBtn) {
+        console.log('toggleRoadviewBtn 초기 텍스트:', toggleRoadviewBtn.textContent);
         
-        if (currentScheduleStr !== lastScheduleStr) {
-            console.log('일정 데이터 변경 감지됨, 길찾기 옵션 업데이트');
-            updateScheduleAndRouteOptions(currentSchedule);
-        }
-    }, 1000);
+        // 이벤트 리스너 등록
+        toggleRoadviewBtn.addEventListener('click', function() {
+            console.log('🔥 로드뷰 토글 버튼 클릭됨!');
+            console.log('클릭 전 container 클래스:', roadviewContainer.className);
+            
+            const hasCollapsed = roadviewContainer.classList.contains('collapsed');
+            const hasExpanded = roadviewContainer.classList.contains('expanded');
+            
+            console.log('현재 상태 - collapsed:', hasCollapsed, 'expanded:', hasExpanded);
+            
+            if (hasCollapsed) {
+                roadviewContainer.classList.remove('collapsed');
+                toggleRoadviewBtn.textContent = '▼';
+                console.log('✅ collapsed → 일반 크기');
+            } else if (hasExpanded) {
+                roadviewContainer.classList.remove('expanded');
+                roadviewContainer.classList.add('collapsed');
+                toggleRoadviewBtn.textContent = '▲';
+                console.log('✅ expanded → collapsed');
+            } else {
+                roadviewContainer.classList.add('expanded');
+                toggleRoadviewBtn.textContent = '▼';
+                console.log('✅ 일반 크기 → expanded');
+            }
+            
+            console.log('클릭 후 container 클래스:', roadviewContainer.className);
+            
+            // 스타일 변경 확인
+            setTimeout(() => {
+                const computedStyle = getComputedStyle(roadviewContainer);
+                console.log('변경 후 실제 크기:', {
+                    width: computedStyle.width,
+                    height: computedStyle.height
+                });
+            }, 400);
+            
+            // 로드뷰 객체 업데이트
+            if (typeof roadview !== 'undefined' && roadview) {
+                setTimeout(() => {
+                    roadview.relayout();
+                    console.log('✅ 로드뷰 relayout 완료');
+                }, 350);
+            } else {
+                console.warn('⚠️ roadview 객체가 없습니다');
+            }
+        });
+        
+        console.log('✅ 이벤트 리스너 등록 완료');
+        
+        // 수동으로 클릭 테스트
+        console.log('수동 클릭 테스트를 위해 다음 명령어를 콘솔에 입력해보세요:');
+        console.log('document.getElementById("toggleRoadview").click()');
+        
+    } else {
+        console.error('❌ toggleRoadview 버튼을 찾을 수 없습니다');
+        
+        // HTML 구조 확인
+        console.log('HTML에서 로드뷰 관련 요소들:');
+        console.log('roadviewContainer:', document.querySelector('#roadviewContainer'));
+        console.log('roadviewHeader:', document.querySelector('#roadviewHeader'));
+        console.log('toggleRoadview by querySelector:', document.querySelector('#toggleRoadview'));
+    }
 });
+
+// 페이지 로드 후 3초 뒤에 실행 (다른 모든 초기화가 끝난 후)
+setTimeout(function() {
+    console.log('🔍 로드뷰 토글 테스트 시작');
+    
+    const container = document.getElementById('roadviewContainer');
+    const button = document.getElementById('toggleRoadview');
+    
+    console.log('컨테이너:', container);
+    console.log('버튼:', button);
+    
+    if (container && button) {
+        console.log('✅ 요소들이 정상적으로 찾아짐');
+        console.log('현재 컨테이너 클래스:', container.className);
+        console.log('현재 버튼 텍스트:', button.textContent);
+        
+        // 기존 이벤트 리스너 제거 후 새로 등록
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+        
+        newButton.addEventListener('click', function() {
+            console.log('🎯 버튼 클릭됨!');
+            
+            if (container.classList.contains('collapsed')) {
+                container.classList.remove('collapsed');
+                newButton.textContent = '▼';
+                console.log('→ 일반 크기로 변경');
+            } else if (container.classList.contains('expanded')) {
+                container.classList.remove('expanded');
+                container.classList.add('collapsed');
+                newButton.textContent = '▲';
+                console.log('→ 축소로 변경');
+            } else {
+                container.classList.add('expanded');
+                newButton.textContent = '▼';
+                console.log('→ 확대로 변경');
+            }
+            
+            console.log('변경 후 클래스:', container.className);
+        });
+        
+        console.log('✅ 새 이벤트 리스너 등록 완료');
+        
+    } else {
+        console.error('❌ 요소를 찾을 수 없음');
+        console.log('모든 roadview 관련 요소:', {
+            byId: document.getElementById('roadviewContainer'),
+            byQuery: document.querySelector('#roadviewContainer'),
+            button: document.querySelector('#toggleRoadview')
+        });
+    }
+}, 3000);

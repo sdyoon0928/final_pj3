@@ -129,7 +129,7 @@ html, body {
 /* === 사이드바 토글 === */
 #toggleBtn { 
     position:absolute; 
-    top:10px; 
+    top:10px; toggleRoadviewBtn
     left:10px; 
     z-index:1002; 
     pointer-events:auto; 
@@ -144,10 +144,56 @@ html, body {
 #sidebar:not(.collapsed) ~ #toggleBtn { left: 310px; }
 
 /* === 로드뷰 === */
-#roadviewContainer { position:absolute; bottom:20px; right:20px; width:250px; border:1px solid #ccc; border-radius:8px; background:#fff; box-shadow:2px 2px 12px rgba(0,0,0,0.2); overflow:hidden; transition:height 0.3s ease; z-index:1500; pointer-events:auto; }
-#roadviewContainer.collapsed { height:40px; }
-#roadviewHeader { display:flex; justify-content:space-between; align-items:center; padding:4px 8px; background:#f1f3f5; font-size:14px; font-weight:500; }
-#roadviewHeader button { border:none; background:transparent; cursor:pointer; font-size:12px; }
+#roadviewContainer { 
+    position: absolute; 
+    bottom: 20px; 
+    right: 20px; 
+    width: 300px; 
+    height: 250px;
+    border: 1px solid #ccc; 
+    border-radius: 8px; 
+    background: #fff; 
+    box-shadow: 2px 2px 12px rgba(0,0,0,0.2); 
+    overflow: hidden; 
+    transition: all 0.3s ease; 
+    z-index: 1500; 
+    pointer-events: auto; 
+}
+
+#roadviewContainer.collapsed { 
+    height: 40px !important; 
+    width: 250px !important;
+}
+
+#roadviewContainer.expanded {
+    /* 기존 width: 950px !important; height: 450px !important; 이 부분을 변경하는 거예요! */
+    position: fixed !important; /* 요소를 뷰포트 기준으로 고정합니다. */
+    top: 0 !important;          /* 뷰포트 최상단에 붙입니다. */
+    left: 0 !important;         /* 뷰포트 최좌측에 붙입니다. */
+    width: 100vw !important;    /* 뷰포트 너비의 100%를 사용합니다. */
+    height: 100vh !important;   /* 뷰포트 높이의 100%를 사용합니다. */
+    margin: 0 !important;       /* 혹시 모를 외부 여백을 제거합니다. */
+    z-index: 9999 !important;   /* 다른 요소들 위에 확실히 표시되도록 높은 z-index를 설정합니다. */
+}
+
+#roadviewHeader { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 4px 8px; 
+    background: #f1f3f5; 
+    font-size: 14px; 
+    font-weight: 500; 
+}
+
+#roadviewHeader button { 
+    border: none; 
+    background: transparent; 
+    cursor: pointer; 
+    font-size: 12px; 
+}
+
+
 .select-category { margin-top:5px; margin-bottom:5px; width:100%; }
 
 /* === 왼쪽 사이드바 토글 === */
@@ -226,7 +272,7 @@ html, body {
 
 .roadview {
     width: 100%;
-    height: 200px;
+    height: calc(100% - 32px); /* 헤더 높이를 제외한 나머지 */
 }
 
 /* === Day 선택기 스타일 === */
